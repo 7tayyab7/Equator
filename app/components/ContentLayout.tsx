@@ -1,0 +1,4 @@
+import {Link,isRouteErrorResponse,useRouteError} from 'react-router';
+import type {ReactNode} from 'react';
+export function ContentLayout({title,children}:{title:string;handle?:string;children:ReactNode}){return <section className="information-page"><div className="information-main"><p className="eyebrow">Equator / Information</p><h1>{title}</h1>{children}</div></section>;}
+export function ContentError(){const error=useRouteError();const missing=isRouteErrorResponse(error)&&error.status===404;return <section className="content-error"><h1>{missing?'Page not found':'This page is temporarily unavailable'}</h1><p>{missing?'This content is not published in this storefront.':'Please reload to try again.'}</p><Link to="/pages">Browse information pages</Link><Link to="/">Return home</Link></section>;}

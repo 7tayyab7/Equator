@@ -1,0 +1,23 @@
+import {ArrowIcon} from './ArrowIcon';
+import {shopifyImageURL as responsiveImage, responsiveImage as imageProps} from '../lib/images';
+import {useEffect,useRef,useState} from 'react';
+type Image={url:string;altText:string|null;width:number;height:number};
+
+export function ProductGallery({images,title}:{images:Image[];title:string}){
+ const thumbnails=useRef<HTMLDivElement>(null);const rail=useRef<HTMLDivElement>(null),zoom=useRef<HTMLDialogElement>(null);const [active,setActive]=useState(0),[primaryReady,setPrimaryReady]=useState(false),[enlarged,setEnlarged]=useState<number|null>(null);
+ useEffect(()=>{
+  const node=rail.current;if(!node)return;
+  const first=node.querySelector('img');if(first?.complete&&first.naturalWidth>0)setPrimaryReady(true);
+  const mobile=matchMedia('(max-width:767px)');
+  const update=()=>{if(mobile.matches)setActive(Math.round(node.scrollLeft/node.clientWidth));};
+  const visible=new Map<Element,number>();
+  const observer=new IntersectionObserver(entries=>{if(mobile.matches)return;for(const entry of entries){if(entry.isIntersecting)visible.set(entry.target,entry.intersectionRatio);else visible.delete(entry.target);}const current=[...visible].sort((a,b)=>b[1]-a[1])[0];if(current)setActive(Number(current[0].getAttribute('data-image-index')));},{rootMargin:'-20% 0px -45% 0px',threshold:[0,.1,.3,.5,1]});
+  node.querySelectorAll('[data-image-index]').forEach(image=>observer.observe(image));node.addEventListener('scroll',update,{passive:true});
+  return()=>{observer.disconnect();node.removeEventListener('scroll',update);};
+ },[]);
+ useEffect(()=>{const node=thumbnails.current,item=node?.querySelector<HTMLElement>(`[data-thumbnail="${active}"]`);if(!node||!item)return;if(item.offsetTop<node.scrollTop)node.scrollTop=item.offsetTop;else if(item.offsetTop+item.offsetHeight>node.scrollTop+node.clientHeight)node.scrollTop=item.offsetTop+item.offsetHeight-node.clientHeight;},[active]);
+ useEffect(()=>{if(enlarged!==null){zoom.current?.showModal();const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous;};}if(zoom.current?.open)zoom.current.close();},[enlarged]);
+ function go(index:number){const node=rail.current;if(!node)return;const behavior=matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth';if(matchMedia('(max-width:767px)').matches)node.scrollTo({left:node.clientWidth*index,behavior});else node.querySelector<HTMLElement>(`[data-image-index="${index}"]`)?.scrollIntoView({block:'start',behavior});}
+
+ return <div className="pdp-gallery-wrap">{images.length>1&&<nav className="pdp-thumbnail-navigation" aria-label="Product image thumbnails"><div className="pdp-thumbnails" ref={thumbnails}>{images.map((image,i)=><button key={image.url} data-thumbnail={i} aria-label={`Show product image ${i+1}`} aria-current={active===i?'true':undefined} onClick={()=>go(i)}><img {...imageProps(image.url,120,[60,120,180],'60px',image.width)} width="60" height="80" alt={image.altText||`${title} — thumbnail ${i+1}`} loading="lazy" decoding="async"/></button>)}</div><p aria-live="polite">{active+1} / {images.length}</p></nav>}<div className="pdp-gallery" ref={rail} aria-label={`${title} images`}>{images.length?images.map((image,i)=><button className="pdp-gallery-image" data-image-index={i} key={image.url} aria-label={`Enlarge ${title} image ${i+1}`} onClick={()=>setEnlarged(i)}><img src={responsiveImage(image.url,1000)} srcSet={[400,600,800,1000,1400].map(w=>`${responsiveImage(image.url,w)} ${w}w`).join(', ')} sizes="(max-width:767px) 100vw, 34vw" width={image.width} height={image.height} alt={image.altText||`${title} — view ${i+1}`} loading={i===active||primaryReady&&i===active+1?'eager':'lazy'} fetchPriority={i===active?'high':primaryReady&&i===active+1?'low':'auto'} onLoad={i===0?()=>setPrimaryReady(true):undefined} decoding="async"/></button>):<p>Image unavailable</p>}</div>{images.length>1&&<div className="pdp-gallery-controls"><button aria-label="Previous image" disabled={active===0} onClick={()=>go(active-1)}><ArrowIcon direction="left"/></button><span aria-live="polite">{active+1} / {images.length}</span><button aria-label="Next image" disabled={active===images.length-1} onClick={()=>go(active+1)}><ArrowIcon/></button></div>}<dialog className="pdp-zoom" ref={zoom} aria-label={`${title} enlarged image`} onCancel={()=>setEnlarged(null)} onClose={()=>setEnlarged(null)}><button className="pdp-modal-close" onClick={()=>setEnlarged(null)} aria-label="Close enlarged image">×</button>{enlarged!==null&&<img src={responsiveImage(images[enlarged].url,2000)} alt={images[enlarged].altText||title}/>}</dialog></div>;
+}

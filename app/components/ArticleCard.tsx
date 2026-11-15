@@ -1,0 +1,5 @@
+import {ArrowIcon} from './ArrowIcon';
+import {responsiveImage} from '../lib/images';
+import {Link} from 'react-router';
+import type {ArticleCard as Article} from '../lib/content.server';
+export function ArticleCard({article,blog,eager=false}:{article:Article;blog:string;eager?:boolean}){return <article className="article-card"><Link to={`/blogs/${blog}/${article.handle}`}>{article.image&&<img {...responsiveImage(article.image.url,800,[320,480,640,800,1000],'(max-width:767px) 50vw, 33vw',article.image.width)} decoding="async" alt={article.image.altText||article.title} width={article.image.width} height={article.image.height} loading={eager?'eager':'lazy'}/>}<time dateTime={article.publishedAt}>{new Date(article.publishedAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'})}</time><h2>{article.title}</h2><p>{(article.excerpt||article.content).slice(0,180)}…</p><span className="article-read">Read story <ArrowIcon direction="up-right"/></span></Link></article>;}
