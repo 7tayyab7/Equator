@@ -1,0 +1,189 @@
+{
+  "SEASON END SALE": [
+    {
+      "title": "Shirts Clearance Sale",
+      "href": "/collections/sscasual-shirts",
+      "image": "/images/menu-banners/clearance-shirts-clearance-sale.jpg",
+      "alt": "Equator Shirts Clearance Sale"
+    },
+    {
+      "title": "Tees Clearance Sale",
+      "href": "/collections/sst-shirts",
+      "image": "/images/menu-banners/clearance-tees-clearance-sale.jpg",
+      "alt": "Equator Tees Clearance Sale"
+    }
+  ],
+  "CHOOSE YOUR SIZE": [
+    {
+      "title": "Shop Small",
+      "href": "/collections/small-size-best-selling-articles",
+      "image": "/images/banners/campaign-1-mobile-440.webp",
+      "alt": "Equator striped polo campaign"
+    },
+    {
+      "title": "Shop Large",
+      "href": "/collections/large-size-best-selling-articles",
+      "image": "/images/banners/campaign-2-mobile-440.webp",
+      "alt": "Equator casual polo and trousers"
+    }
+  ],
+  "LOOKBOOK": [
+    {
+      "title": "Summer ’26",
+      "href": "/pages/summer-26",
+      "image": "/images/banners/campaign-2-mobile-440.webp",
+      "alt": "Equator summer collection campaign"
+    },
+    {
+      "title": "Formal ’25",
+      "href": "/pages/formal-25",
+      "image": "/images/banners/campaign-5-mobile-440.webp",
+      "alt": "Equator formalwear campaign"
+    }
+  ],
+  "CASUAL": [
+    {
+      "title": "Polos",
+      "href": "/collections/polos",
+      "image": "/images/menu-banners/casuals-polos.jpg",
+      "alt": "Equator Polos"
+    },
+    {
+      "title": "Everyday Shirts",
+      "href": "/collections/woven-shirts",
+      "image": "/images/menu-banners/casuals-everyday-shirts.jpg",
+      "alt": "Equator Everyday Shirts"
+    }
+  ],
+  "QAFTAAN": [
+    {
+      "title": "Qaftaan Collection",
+      "href": "/collections/qaftaan",
+      "image": "https://cdn.shopify.com/s/files/1/0435/3713/7815/files/QFT-K-S25-25-BLK_5_837424ba-026e-4cd7-adb5-464bb8fdee62.jpg?v=1755092560&width=640&format=webp",
+      "alt": "Equator black kurta"
+    },
+    {
+      "title": "Waistcoats",
+      "href": "/collections/waistcoats-for-men",
+      "image": "https://cdn.shopify.com/s/files/1/0435/3713/7815/files/Untitled-3_0000_QF-WC-S23-44-LBL_1.jpg?v=1755094375&width=640&format=webp",
+      "alt": "Equator light blue waistcoat"
+    }
+  ],
+  "FORMALS": [
+    {
+      "title": "Formal Shirts",
+      "href": "/collections/formal-shirts",
+      "image": "/images/menu-banners/formals-formal-shirts.jpg",
+      "alt": "Equator Formal Shirts"
+    },
+    {
+      "title": "Tailored Dressing",
+      "href": "/collections/formals",
+      "image": "/images/menu-banners/formals-tailored-dressing.jpg",
+      "alt": "Equator Tailored Dressing"
+    }
+  ],
+  "WINTER SALE": [
+    {
+      "title": "Winter Jackets",
+      "href": "/collections/new-winter-jackets",
+      "image": "/images/menu-banners/winter-26-winter-jackets.jpg",
+      "alt": "Equator Winter Jackets"
+    },
+    {
+      "title": "Winter Knitwear",
+      "href": "/collections/new-winter-sweaters",
+      "image": "/images/menu-banners/winter-26-winter-knit-wear.jpg",
+      "alt": "Equator Winter Knitwear"
+    }
+  ],
+  "ACCESSORIES": [
+    {
+      "title": "Caps",
+      "href": "/collections/wwbeanies",
+      "image": "/images/menu-banners/accessories-caps.jpg",
+      "alt": "Equator Caps"
+    },
+    {
+      "title": "Finishing Touches",
+      "href": "/collections/accessories",
+      "image": "/images/menu-banners/accessories-finishing-touches.jpg",
+      "alt": "Equator Finishing Touches"
+    }
+  ],
+  "Casual": [
+    {
+      "title": "Polos",
+      "href": "/collections/polos",
+      "image": "/images/menu-banners/casuals-polos.jpg",
+      "alt": "Equator Polos",
+      "menuItemTitle": "POLOS"
+    },
+    {
+      "title": "Everyday Shirts",
+      "href": "/collections/woven-shirts",
+      "image": "/images/menu-banners/casuals-everyday-shirts.jpg",
+      "alt": "Equator Everyday Shirts",
+      "menuItemTitle": "SHIRTS"
+    }
+  ],
+  "Formal": [
+    {
+      "title": "Formal Shirts",
+      "href": "/collections/formal-shirts",
+      "image": "/images/menu-banners/formals-formal-shirts.jpg",
+      "alt": "Equator Formal Shirts",
+      "menuItemTitle": "FORMAL SHIRTS"
+    },
+    {
+      "title": "Tailored Dressing",
+      "href": "/collections/formals",
+      "image": "/images/menu-banners/formals-tailored-dressing.jpg",
+      "alt": "Equator Tailored Dressing"
+    }
+  ],
+  "Clearance": [
+    {
+      "title": "Shirts Clearance Sale",
+      "href": "/collections/sscasual-shirts",
+      "image": "/images/menu-banners/clearance-shirts-clearance-sale.jpg",
+      "alt": "Equator Shirts Clearance Sale"
+    },
+    {
+      "title": "Tees Clearance Sale",
+      "href": "/collections/sst-shirts",
+      "image": "/images/menu-banners/clearance-tees-clearance-sale.jpg",
+      "alt": "Equator Tees Clearance Sale"
+    }
+  ],
+  "Winter ’26": [
+    {
+      "title": "Winter Jackets",
+      "href": "/collections/new-winter-jackets",
+      "image": "/images/menu-banners/winter-26-winter-jackets.jpg",
+      "alt": "Equator Winter Jackets",
+      "menuItemTitle": "Jackets"
+    },
+    {
+      "title": "Winter Knitwear",
+      "href": "/collections/new-winter-sweaters",
+      "image": "/images/menu-banners/winter-26-winter-knit-wear.jpg",
+      "alt": "Equator Winter Knitwear",
+      "menuItemTitle": "Sweaters"
+    }
+  ],
+  "Accessories": [
+    {
+      "title": "Caps",
+      "href": "/collections/wwbeanies",
+      "image": "/images/menu-banners/accessories-caps.jpg",
+      "alt": "Equator Caps"
+    },
+    {
+      "title": "Finishing Touches",
+      "href": "/collections/accessories",
+      "image": "/images/menu-banners/accessories-finishing-touches.jpg",
+      "alt": "Equator Finishing Touches"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "googleAnalyticsIds": [
+    "G-4F16VS8G7N",
+    "G-9MDQ6213X2"
+  ],
+  "googleAdsIds": [
+    "AW-18209210514",
+    "AW-11463346631"
+  ],
+  "googleEventLabels": {
+    "search": [
+      "AW-18209210514/xPQQCJ3iu7kcEJKB6upD",
+      "MC-EKEQY197BP"
+    ],
+    "view_item": [
+      "AW-18209210514/A_fhCJriu7kcEJKB6upD",
+      "MC-9PMGKW0LVX",
+      "MC-EKEQY197BP"
+    ],
+    "page_view": [
+      "AW-18209210514/4fbvCJfiu7kcEJKB6upD",
+      "MC-9PMGKW0LVX",
+      "MC-EKEQY197BP"
+    ],
+    "add_to_cart": [
+      "AW-18209210514/l-58CJTiu7kcEJKB6upD",
+      "MC-EKEQY197BP"
+    ]
+  },
+  "gtmId": "GTM-KSMP37LX",
+  "metaPixelId": "1554958832889928",
+  "tiktokPixelId": "D1LRKN3C77U7P8J6OEL0",
+  "snapPixelId": "3337da2b-1b7c-491b-b7f8-afb5fc0986c7",
+  "shopId": "43537137815",
+  "storefrontId": "1000182782",
+  "myshopifyDomain": "equatorstores.myshopify.com",
+  "googleTagIds": [
+    "GT-55NSXKR2",
+    "GT-MJW4RWL8",
+    "GT-K8HBJTD9"
+  ],
+  "gtmEnabled": false,
+  "tiktokCatalogIdFormat": null,
+  "snapCatalogIdFormat": null
+}

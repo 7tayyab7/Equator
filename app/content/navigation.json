@@ -1,0 +1,305 @@
+{
+  "source": "https://equatorstores.com/",
+  "capturedOn": "2026-10-29",
+  "header": [
+    {
+      "title": "New In",
+      "href": "/collections/new-arrivals",
+      "children": []
+    },
+    {
+      "title": "Winter ’26",
+      "href": "/collections/winter-2026",
+      "children": [
+        {
+          "title": "Jackets",
+          "href": "/collections/new-winter-jackets"
+        },
+        {
+          "title": "Sweaters",
+          "href": "/collections/new-winter-sweaters"
+        },
+        {
+          "title": "Sweatshirts/Hoodies",
+          "href": "/collections/new-winter-sweatshirts-hoodies"
+        },
+        {
+          "title": "Shirts",
+          "href": "/collections/new-winter-shirts"
+        },
+        {
+          "title": "Co-Ord Sets",
+          "href": "/collections/new-winter-co-ord-sets"
+        },
+        {
+          "title": "T-Shirts",
+          "href": "/collections/new-winter-t-shirt"
+        },
+        {
+          "title": "Jeans",
+          "href": "/collections/new-winter-jeans"
+        },
+        {
+          "title": "Fashion Pants",
+          "href": "/collections/new-winter-pants"
+        },
+        {
+          "title": "Trousers",
+          "href": "/collections/new-winter-trousers"
+        }
+      ]
+    },
+    {
+      "title": "Casual",
+      "href": "/collections/casual",
+      "children": [
+        {
+          "title": "JACKETS",
+          "href": "/collections/jackets-1"
+        },
+        {
+          "title": "SWEATSHIRTS/HOODIES",
+          "href": "/collections/wwsweatshirts-uppers-hoods"
+        },
+        {
+          "title": "SWEATERS",
+          "href": "/collections/wwsweaters"
+        },
+        {
+          "title": "SHIRTS",
+          "href": "/collections/woven-shirts"
+        },
+        {
+          "title": "T-SHIRTS",
+          "href": "/collections/t-shirts"
+        },
+        {
+          "title": "POLOS",
+          "href": "/collections/polos"
+        },
+        {
+          "title": "JEANS",
+          "href": "/collections/jeans-for-men"
+        },
+        {
+          "title": "PANTS",
+          "href": "/collections/fashion-pants"
+        },
+        {
+          "title": "TROUSERS",
+          "href": "/collections/trousers"
+        },
+        {
+          "title": "SHORTS",
+          "href": "/collections/casual-shorts-for-men-in-pakistan"
+        },
+        {
+          "title": "CO-ORD SETS",
+          "href": "/collections/co-ord-sets"
+        }
+      ]
+    },
+    {
+      "title": "Formal",
+      "href": "/collections/formals",
+      "children": [
+        {
+          "title": "FORMAL SHIRTS",
+          "href": "/collections/formal-shirts"
+        },
+        {
+          "title": "SEMI CASUAL SHIRTS",
+          "href": "/collections/semi-casual-shirts"
+        },
+        {
+          "title": "BLAZERS",
+          "href": "/collections/blazers"
+        },
+        {
+          "title": "SUITS",
+          "href": "/collections/suits"
+        },
+        {
+          "title": "WAIST COAT",
+          "href": "/collections/waist-coat"
+        },
+        {
+          "title": "ACCESSORIES",
+          "href": "/collections/accessories"
+        }
+      ]
+    },
+    {
+      "title": "Clearance",
+      "href": "/collections/clearance",
+      "children": [
+        {
+          "title": "Summer",
+          "href": "/collections/summer-sale"
+        },
+        {
+          "title": "Winter",
+          "href": "/collections/winter-sale"
+        }
+      ]
+    },
+    {
+      "title": "Accessories",
+      "href": "/collections/accessories",
+      "children": [
+        {
+          "title": "Caps",
+          "href": "/collections/wwbeanies"
+        },
+        {
+          "title": "Belt",
+          "href": "/collections/belt"
+        },
+        {
+          "title": "Socks",
+          "href": "/collections/socks"
+        }
+      ]
+    }
+  ],
+  "footer": [
+    {
+      "href": "/pages/about-us",
+      "title": "About Us"
+    },
+    {
+      "href": "/pages/contact",
+      "title": "Contact Us"
+    },
+    {
+      "href": "/pages/privacy-policy",
+      "title": "Privacy Policy"
+    },
+    {
+      "href": "/pages/return-exchange-policy",
+      "title": "Return & Exchange Policy"
+    },
+    {
+      "href": "/pages/shipping-policy",
+      "title": "Shipping Policy"
+    },
+    {
+      "href": "/pages/terms-and-conditions",
+      "title": "Terms and Conditions"
+    },
+    {
+      "href": "/pages/store-locations",
+      "title": "Store Locations"
+    },
+    {
+      "href": "/blogs/news",
+      "title": "Our Blog"
+    }
+  ],
+  "socials": [
+    {
+      "href": "https://www.facebook.com/equatorstores",
+      "title": "Follow on Facebook"
+    },
+    {
+      "href": "https://www.instagram.com/equatorstores.pk",
+      "title": "Follow on Instagram"
+    },
+    {
+      "href": "https://www.youtube.com/@equatorstores",
+      "title": "Follow on YouTube"
+    },
+    {
+      "href": "https://www.tiktok.com/@equatorstores",
+      "title": "Follow on Tiktok"
+    }
+  ],
+  "navigationBrief": "User-supplied Website tabs Google Doc; read-only preview navigation. Shared Shopify menus unchanged.",
+  "collectionGroups": [
+    {
+      "title": "Summer Sale",
+      "href": "/collections/summer-sale",
+      "children": [
+        {
+          "title": "SHIRTS",
+          "href": "/collections/sscasual-shirts"
+        },
+        {
+          "title": "POLOS",
+          "href": "/collections/sspolos"
+        },
+        {
+          "title": "T-SHIRTS",
+          "href": "/collections/sst-shirts"
+        },
+        {
+          "title": "SHORTS",
+          "href": "/collections/ssshorts"
+        },
+        {
+          "title": "JEANS",
+          "href": "/collections/jeans-for-men"
+        },
+        {
+          "title": "PANTS",
+          "href": "/collections/cotton-pants"
+        },
+        {
+          "title": "TROUSERS",
+          "href": "/collections/trousers"
+        },
+        {
+          "title": "QAFTAAN",
+          "href": "/collections/qaftaan-summer-sale"
+        }
+      ]
+    },
+    {
+      "title": "Winter Sale",
+      "href": "/collections/winter-sale",
+      "children": [
+        {
+          "title": "Jackets",
+          "href": "/collections/winter-jackets-for-men"
+        },
+        {
+          "title": "Sweaters",
+          "href": "/collections/wwsweaters"
+        },
+        {
+          "title": "Sweatshirts/Uppers/Hoods",
+          "href": "/collections/wwsweatshirts-uppers-hoods"
+        },
+        {
+          "title": "Shirts",
+          "href": "/collections/wwwoven-shirts"
+        },
+        {
+          "title": "Co-ord Sets",
+          "href": "/collections/co-ord-set"
+        },
+        {
+          "title": "Blazers",
+          "href": "/collections/blazers-coats-for-men"
+        },
+        {
+          "title": "Pants",
+          "href": "/collections/wwcotton-pants"
+        },
+        {
+          "title": "Jeans",
+          "href": "/collections/wwvjeans"
+        },
+        {
+          "title": "Trousers",
+          "href": "/collections/wwtrousers"
+        }
+      ]
+    }
+  ],
+  "menuHandles": {
+    "Winter ’26": "winter-2026",
+    "Casual": "casual",
+    "Formal": "formals"
+  }
+}
