@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {blogPagination} from '../app/lib/blog-pagination.ts';
+const cursors=Array.from({length:22},(_,i)=>'cursor'+i);
+test('Shopify numeric blog pages and cursor links show the same articles',()=>{const page=blogPagination(new URLSearchParams('page=2'),cursors);assert.equal(page.after,'cursor8');assert.equal(page.offset,9);assert.equal(blogPagination(new URLSearchParams('after=cursor8'),cursors).page,2);assert.equal(blogPagination(new URLSearchParams('before=cursor18'),cursors).page,2);});
+test('missing and invalid blog cursors recover without duplicating non-existent pages',()=>{assert.equal(blogPagination(new URLSearchParams('page=99'),cursors).page,3);assert.equal(blogPagination(new URLSearchParams('after=bad'),cursors).page,1);assert.equal(blogPagination(new URLSearchParams(),[]).pageCount,1);});
