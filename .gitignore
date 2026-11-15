@@ -1,0 +1,11 @@
+node_modules/
+node_modules.partial-install/
+build/
+.react-router/
+.env
+.env.*
+!.env.example
+.oxygen/
+.shopify/
+*.log
+.DS_Store
