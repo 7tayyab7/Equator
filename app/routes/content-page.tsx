@@ -1,0 +1,27 @@
+import {hostedStoreOrigin} from '../lib/hosted-store';
+import {seoLoader} from '../lib/seo-redirects.server';
+import {settings} from '../settings';
+import {SocialIcon} from '../components/Footer';
+import {ArrowIcon} from '../components/ArrowIcon';
+import {imageSrcSet,responsiveImage} from '../lib/images';
+import {Link,redirect,useLoaderData} from 'react-router';
+import type {Route} from './+types/content-page';
+import {environmentContext} from '../storefront.context';
+import {getContentPage} from '../lib/content.server';
+import {ContentLayout,ContentError} from '../components/ContentLayout';
+import {ProductCard} from '../components/ProductCard';
+export async function loader({params,request,context}:Route.LoaderArgs){if(params.handle==='blog')throw redirect('/blogs/news',301);if(params.handle==='all-store-locations')throw redirect('/pages/store-locations',301);if(params.handle==='login')throw redirect('/account');return seoLoader(context.get(environmentContext),request,async()=>({...await getContentPage(context.get(environmentContext),params.handle,request.signal),hostedStoreOrigin:hostedStoreOrigin(context.get(environmentContext))}));}
+export default function Page(){const page=useLoaderData<typeof loader>();const e=page.editorial;
+ if(e)return <section className="editorial-page"><header><p className="eyebrow">Equator / Lookbook</p><h1>{page.title}</h1></header>{e.hero.desktop&&<picture className="editorial-hero">{e.hero.mobile&&<source media="(max-width:767px)" srcSet={imageSrcSet(e.hero.mobile.url,[360,540,750,1100],e.hero.mobile.width)||e.hero.mobile.url} sizes="100vw" width={e.hero.mobile.width} height={e.hero.mobile.height}/>}<img {...responsiveImage(e.hero.desktop.url,1600,[640,960,1280,1600,1920],'100vw',e.hero.desktop.width)} width={e.hero.desktop.width} height={e.hero.desktop.height} loading="eager" decoding="async" alt={page.title} fetchPriority="high"/></picture>}{e.paragraphs.length>0&&<div className="editorial-intro">{e.paragraphs.map(p=><p key={p}>{p}</p>)}</div>}{e.videos.map(src=><video key={src} src={src} controls playsInline preload="metadata"/>)}<div className="editorial-gallery">{e.images.map((image,i)=><img key={image.url} {...responsiveImage(image.url,1000,[320,480,750,1000,1400],'50vw',image.width)} decoding="async" width={image.width} height={image.height} alt={image.alt||`${page.title} — look ${i+1}`} loading="lazy"/>)}</div>{page.products.length>0&&<section className="editorial-shop"><h2>Shop the edit</h2><div className="product-grid">{page.products.map(p=><ProductCard key={p.id} product={p}/>)}</div></section>}</section>;
+ return <ContentLayout title={page.title} handle={page.handle}>{page.handle==='contact'?<Contact hostedStoreOrigin={page.hostedStoreOrigin}/>:page.body?<div className="rich-content" dangerouslySetInnerHTML={{__html:page.body}}/>:<div className="unfilled-content">{page.handle==='look-book'?<div className="lookbook-index">{page.lookbooks.map(edit=><Link key={edit.handle} to={`/pages/${edit.handle}`}>{edit.image&&<img {...responsiveImage(edit.image,750,[320,480,750,1000],'50vw')} decoding="async" alt="" loading="lazy"/>}<span>{edit.title}</span></Link>)}</div>:<><p>Explore the latest Equator collections.</p><Link to={page.handle==='qaftan'?'/collections/qaftaan':page.handle==='casual'||page.handle==='causal-page'?'/collections/woven-shirts':'/collections/new-arrivals'}>Explore the collection <ArrowIcon/></Link><Link to="/pages/look-book">View lookbooks <ArrowIcon/></Link></>}</div>}</ContentLayout>;
+}
+function Contact({hostedStoreOrigin}:{hostedStoreOrigin:string}){return <div className="contact-content"><div className="contact-information"><h2>Drop us a line</h2><p>We love to hear from you on our customer service, merchandise, website or any topics you want to share with us. Your comments and suggestions will be appreciated.</p>
+ <section className="contact-help" aria-labelledby="contact-help-heading"><h2 id="contact-help-heading">Need help?</h2><address>
+  <a href={`tel:${settings.contact.phone}`}>Office: {settings.contact.phoneLabel}</a>
+  {settings.contact.mobiles.map(phone=><a key={phone.number} href={`tel:${phone.number}`}>Phone {phone.label}</a>)}
+  <a href={`mailto:${settings.contact.email}`}>{settings.contact.email}</a>
+  <span>{settings.contact.address}</span>
+ </address><nav className="contact-socials" aria-label="Equator contact social profiles">{settings.socials.map(link=><a key={link.href} href={link.href} aria-label={link.title} target="_blank" rel="noopener noreferrer"><SocialIcon name={link.title}/></a>)}</nav></section></div>
+ <form method="post" action={`${hostedStoreOrigin}/contact#contact_form`} className="contact-message-form"><input type="hidden" name="form_type" value="contact"/><input type="hidden" name="utf8" value="✓"/><label>Your name<input name="contact[name]" autoComplete="name" required maxLength={100}/></label><label>Email address<input name="contact[email]" type="email" autoComplete="email" required maxLength={254}/></label><label>Phone (optional)<input name="contact[phone]" type="tel" autoComplete="tel" maxLength={30}/></label><label>Message<textarea name="contact[body]" rows={5} required maxLength={5000}/></label><button className="solid-button" type="submit">Send message</button><p className="contact-note">Your message is submitted securely through Shopify to Equator customer care.</p></form></div>;}
+
+export const ErrorBoundary=ContentError;

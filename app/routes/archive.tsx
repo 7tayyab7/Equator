@@ -1,0 +1,6 @@
+import {ArrowIcon} from '../components/ArrowIcon';
+import {Link,useLoaderData} from 'react-router';
+import {archiveCampaigns} from '../lib/merchandising.server';
+import {responsiveImage} from '../lib/images';
+export function loader(){return {campaigns:archiveCampaigns()};}
+export default function Archive(){const {campaigns}=useLoaderData<typeof loader>();return <section className="archive-page"><header><p className="eyebrow">Equator</p><h1>The Archive</h1><p>Explore past Equator campaigns and collections.</p></header><div className="archive-grid">{campaigns.map(c=><Link className="category-tile" key={c.handle} to={`/pages/${c.handle}`}>{c.image&&<span><img {...responsiveImage(c.image.url,640,[320,640,960],'(max-width:600px) 90vw, 33vw',c.image.width)} alt={`Equator ${c.title} campaign`} width={c.image.width} height={c.image.height} loading="lazy" decoding="async"/></span>}<h2>{c.title}<span aria-hidden="true"><ArrowIcon direction="up-right"/></span></h2></Link>)}</div><nav className="archive-sale-links" aria-label="Seasonal sales"><Link to="/collections/summer-sale">Shop Summer Sale <ArrowIcon/></Link><Link to="/collections/winter-sale">Shop Winter Sale <ArrowIcon/></Link></nav></section>;}
