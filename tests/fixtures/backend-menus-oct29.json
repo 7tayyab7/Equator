@@ -1,0 +1,160 @@
+{
+  "data": {
+    "winter": {
+      "id": "gid://shopify/Menu/276037992692",
+      "title": "WINTER 2026",
+      "handle": "winter-2026",
+      "items": [
+        {
+          "title": "Jackets",
+          "url": "https://equatorstores.com/collections/new-winter-jackets",
+          "items": []
+        },
+        {
+          "title": "Sweaters",
+          "url": "https://equatorstores.com/collections/new-winter-sweaters",
+          "items": []
+        },
+        {
+          "title": "Sweatshirts/Hoodies",
+          "url": "https://equatorstores.com/collections/new-winter-sweatshirts-hoodies",
+          "items": []
+        },
+        {
+          "title": "Shirts",
+          "url": "https://equatorstores.com/collections/new-winter-shirts",
+          "items": []
+        },
+        {
+          "title": "Co-Ord Sets",
+          "url": "https://equatorstores.com/collections/new-winter-co-ord-sets",
+          "items": []
+        },
+        {
+          "title": "T-Shirts",
+          "url": "https://equatorstores.com/collections/new-winter-t-shirt",
+          "items": []
+        },
+        {
+          "title": "Jeans",
+          "url": "https://equatorstores.com/collections/new-winter-jeans",
+          "items": []
+        },
+        {
+          "title": "Fashion Pants",
+          "url": "https://equatorstores.com/collections/new-winter-pants",
+          "items": []
+        },
+        {
+          "title": "Trousers",
+          "url": "https://equatorstores.com/collections/new-winter-trousers",
+          "items": []
+        }
+      ]
+    },
+    "casual": {
+      "id": "gid://shopify/Menu/167858700439",
+      "title": "CASUAL",
+      "handle": "casual",
+      "items": [
+        {
+          "title": "JACKETS",
+          "url": "https://equatorstores.com/collections/jackets-1",
+          "items": []
+        },
+        {
+          "title": "SWEATSHIRTS/HOODIES",
+          "url": "https://equatorstores.com/collections/wwsweatshirts-uppers-hoods",
+          "items": []
+        },
+        {
+          "title": "SWEATERS",
+          "url": "https://equatorstores.com/collections/wwsweaters",
+          "items": []
+        },
+        {
+          "title": "SHIRTS",
+          "url": "https://equatorstores.com/collections/woven-shirts",
+          "items": []
+        },
+        {
+          "title": "T-SHIRTS",
+          "url": "https://equatorstores.com/collections/t-shirts",
+          "items": []
+        },
+        {
+          "title": "POLOS",
+          "url": "https://equatorstores.com/collections/polos",
+          "items": []
+        },
+        {
+          "title": "JEANS",
+          "url": "https://equatorstores.com/collections/jeans-for-men",
+          "items": []
+        },
+        {
+          "title": "PANTS",
+          "url": "https://equatorstores.com/collections/fashion-pants",
+          "items": []
+        },
+        {
+          "title": "TROUSERS",
+          "url": "https://equatorstores.com/collections/trousers",
+          "items": []
+        },
+        {
+          "title": "SHORTS",
+          "url": "https://equatorstores.com/collections/casual-shorts-for-men-in-pakistan",
+          "items": []
+        },
+        {
+          "title": "CO-ORD SETS",
+          "url": "https://equatorstores.com/collections/co-ord-sets",
+          "items": []
+        }
+      ]
+    },
+    "formals": {
+      "id": "gid://shopify/Menu/167858536599",
+      "title": "FORMALS",
+      "handle": "formals",
+      "items": [
+        {
+          "title": "FORMAL SHIRTS",
+          "url": "https://equatorstores.com/collections/formal-shirts",
+          "items": []
+        },
+        {
+          "title": "SEMI CASUAL SHIRTS",
+          "url": "https://equatorstores.com/collections/semi-casual-shirts",
+          "items": []
+        },
+        {
+          "title": "BLAZERS",
+          "url": "https://equatorstores.com/collections/blazers",
+          "items": []
+        },
+        {
+          "title": "SUITS",
+          "url": "https://equatorstores.com/collections/suits",
+          "items": []
+        },
+        {
+          "title": "WAIST COAT",
+          "url": "https://equatorstores.com/collections/waist-coat",
+          "items": []
+        },
+        {
+          "title": "ACCESSORIES",
+          "url": "https://equatorstores.com/collections/accessories",
+          "items": []
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 12
+    }
+  }
+}

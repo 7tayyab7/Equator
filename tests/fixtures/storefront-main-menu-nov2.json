@@ -1,0 +1,78 @@
+{
+  "data": {
+    "main": {
+      "handle": "equator-storefront-main-menu",
+      "title": "Equator storefront main menu",
+      "items": [
+        {
+          "id": "gid://shopify/MenuItem/670384619764",
+          "title": "New In",
+          "url": "https://checkout.equatorstores.com/collections/new-arrivals",
+          "items": []
+        },
+        {
+          "id": "gid://shopify/MenuItem/670384652532",
+          "title": "Winter ’26",
+          "url": "https://checkout.equatorstores.com/collections/winter-2026",
+          "items": []
+        },
+        {
+          "id": "gid://shopify/MenuItem/670384685300",
+          "title": "Casual",
+          "url": "https://checkout.equatorstores.com/collections/casual",
+          "items": []
+        },
+        {
+          "id": "gid://shopify/MenuItem/670384718068",
+          "title": "Formal",
+          "url": "https://checkout.equatorstores.com/collections/formals",
+          "items": []
+        },
+        {
+          "id": "gid://shopify/MenuItem/670384750836",
+          "title": "Clearance",
+          "url": "https://checkout.equatorstores.com/collections/clearance",
+          "items": [
+            {
+              "id": "gid://shopify/MenuItem/670385996020",
+              "title": "Summer",
+              "url": "https://checkout.equatorstores.com/collections/summer-sale"
+            },
+            {
+              "id": "gid://shopify/MenuItem/670386028788",
+              "title": "Winter",
+              "url": "https://checkout.equatorstores.com/collections/winter-sale"
+            }
+          ]
+        },
+        {
+          "id": "gid://shopify/MenuItem/670384783604",
+          "title": "Accessories",
+          "url": "https://checkout.equatorstores.com/collections/accessories",
+          "items": [
+            {
+              "id": "gid://shopify/MenuItem/670385438964",
+              "title": "Caps",
+              "url": "https://checkout.equatorstores.com/collections/wwbeanies"
+            },
+            {
+              "id": "gid://shopify/MenuItem/670385471732",
+              "title": "Belt",
+              "url": "https://checkout.equatorstores.com/collections/belt"
+            },
+            {
+              "id": "gid://shopify/MenuItem/670385504500",
+              "title": "Socks",
+              "url": "https://checkout.equatorstores.com/collections/socks"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "extensions": {
+    "cost": {
+      "requestedQueryCost": 3
+    }
+  }
+}
