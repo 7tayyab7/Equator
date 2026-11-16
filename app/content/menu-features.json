@@ -43,16 +43,16 @@
   ],
   "CASUAL": [
     {
-      "title": "Polos",
-      "href": "/collections/polos",
-      "image": "/images/menu-banners/casuals-polos.jpg",
-      "alt": "Equator Polos"
+      "title": "Sweaters",
+      "href": "/collections/wwsweaters",
+      "image": "/images/menu-banners/casual-sweaters-20261116.jpg",
+      "alt": "Equator cream cable-knit sweater"
     },
     {
-      "title": "Everyday Shirts",
-      "href": "/collections/woven-shirts",
-      "image": "/images/menu-banners/casuals-everyday-shirts.jpg",
-      "alt": "Equator Everyday Shirts"
+      "title": "Jackets",
+      "href": "/collections/jackets-1",
+      "image": "/images/menu-banners/casual-jackets-20261116.jpg",
+      "alt": "Equator checked casual jacket"
     }
   ],
   "QAFTAAN": [
@@ -113,18 +113,18 @@
   ],
   "Casual": [
     {
-      "title": "Polos",
-      "href": "/collections/polos",
-      "image": "/images/menu-banners/casuals-polos.jpg",
-      "alt": "Equator Polos",
-      "menuItemTitle": "POLOS"
+      "title": "Sweaters",
+      "href": "/collections/wwsweaters",
+      "image": "/images/menu-banners/casual-sweaters-20261116.jpg",
+      "alt": "Equator cream cable-knit sweater",
+      "menuItemTitle": "SWEATERS"
     },
     {
-      "title": "Everyday Shirts",
-      "href": "/collections/woven-shirts",
-      "image": "/images/menu-banners/casuals-everyday-shirts.jpg",
-      "alt": "Equator Everyday Shirts",
-      "menuItemTitle": "SHIRTS"
+      "title": "Jackets",
+      "href": "/collections/jackets-1",
+      "image": "/images/menu-banners/casual-jackets-20261116.jpg",
+      "alt": "Equator checked casual jacket",
+      "menuItemTitle": "JACKETS"
     }
   ],
   "Formal": [

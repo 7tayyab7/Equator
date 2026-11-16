@@ -1,4 +1,5 @@
 import {hostedStoreOrigin} from './lib/hosted-store';
+import {HomepageHeroPreload} from './components/HomepageHeroPreload';
 import trackingSettings from './content/tracking.json';
 import {trackingEnabled} from './lib/tracking';
 import {TrackingHead,TrackingEvents} from './components/Tracking';
@@ -26,7 +27,7 @@ export async function loader({context,request}:Route.LoaderArgs) {const env=cont
 export function shouldRevalidate({currentUrl,nextUrl,formMethod,defaultShouldRevalidate}:ShouldRevalidateFunctionArgs){if(formMethod&&formMethod.toUpperCase()!=='GET')return defaultShouldRevalidate;if(currentUrl.pathname!==nextUrl.pathname||currentUrl.search!==nextUrl.search)return false;return defaultShouldRevalidate;}
 
 export function Layout({children}: {children: ReactNode}) {
-  return <html lang="en"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="preconnect" href="https://cdn.shopify.com"/><link rel="icon" type="image/png" href="/images/equator-favicon-emblem-20261110.png?v=20261110"/><link rel="apple-touch-icon" href="/images/equator-favicon-emblem-20261110.png?v=20261110"/><Meta/><SeoHead/><TrackingHead/><Links/></head><body>{children}<ScrollRestoration/><Scripts/></body></html>;
+  return <html lang="en"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="preconnect" href="https://cdn.shopify.com"/><HomepageHeroPreload/><link rel="icon" type="image/png" href="/images/equator-favicon-emblem-20261110.png?v=20261110"/><link rel="apple-touch-icon" href="/images/equator-favicon-emblem-20261110.png?v=20261110"/><Meta/><SeoHead/><TrackingHead/><Links/></head><body>{children}<ScrollRestoration/><Scripts/></body></html>;
 }
 
 export default function App() {

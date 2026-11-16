@@ -10,7 +10,7 @@ import {useLoaderData,useRouteLoaderData} from 'react-router';
 import type {Route} from './+types/home';
 export async function loader({context,request}:Route.LoaderArgs) {
   const env=context.get(environmentContext);
-  const merchandising=await getMerchandising(env,request.signal);
+  const merchandising=await getMerchandising(env,request.signal,settings.homepageSections);
   const arrivals=merchandising.newProducts.slice(0,12),excluded=new Set(arrivals.map(p=>p.id));
   const best=merchandising.bestProducts.filter(p=>!excluded.has(p.id)).slice(0,12);
   return {categories:merchandising.categories,arrivals,best};
