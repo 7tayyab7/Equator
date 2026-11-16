@@ -1,4 +1,5 @@
 import {useId,useRef,useState,type ReactNode,type FormEvent} from 'react';
+import {requestJSON,JsonRequestTimeoutError} from '../lib/json-request.client';
 
 export function WriteProductReview({productId,productTitle,summary}:{productId:string;productTitle:string;summary?:ReactNode}){
  const id=useId(),[open,setOpen]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState(''),pending=useRef(false);
@@ -7,11 +8,10 @@ export function WriteProductReview({productId,productTitle,summary}:{productId:s
   const form=event.currentTarget;pending.current=true;setBusy(true);setError('');
   try{
    const fields=new FormData(form),payload=new URLSearchParams();fields.forEach((value,key)=>{if(typeof value==='string')payload.append(key,value);});
-   const response=await fetch('/resources/product-reviews',{method:'POST',body:payload});
-   const result=await response.json() as {message?:string;error?:string};
+   const {response,data:result}=await requestJSON<{message?:string;error?:string}>('/resources/product-reviews',{method:'POST',body:payload});
    if(!response.ok||!result.message)throw new Error(result.error||'We could not confirm the submission. Please check your email before trying again.');
    setMessage(result.message);form.reset();
-  }catch(error){setError(error instanceof Error?error.message:'We could not confirm the submission. Please check your email before trying again.');}
+  }catch(error){setError(error instanceof JsonRequestTimeoutError?'We could not confirm the submission. Please check your email before trying again.':error instanceof Error?error.message:'We could not confirm the submission. Please check your email before trying again.');}
   finally{pending.current=false;setBusy(false);}
  }
  return <div className="write-review">
