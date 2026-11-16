@@ -1,16 +1,16 @@
 # Equator Hydrogen storefront
 
-Latest known production source snapshot prepared 15 November 2026, matching the recorded 10 November 2026 favicon deployment. The storefront runs on Shopify Oxygen at https://equatorstores.com. This repository upload does not deploy or change the live store. This repository contains no deployment workflow or deployment credentials. Continue using authorized manual preview deployments; do not enable automatic production deployment as part of source sharing.
+Production source updated 16 November 2026 after the reliability audit and separate preview verification. The storefront runs on Shopify Oxygen at https://equatorstores.com. Repository updates do not deploy the live store. The GitHub workflow runs validation only and contains no deployment credentials. Continue using authorized manual preview deployments; do not enable automatic production deployment as part of source sharing.
 
 ## Local setup
 
 Use Node 24 LTS (or Node 22.12+). Run npm ci, copy .env.example to .env, and supply the store-specific values securely. Then run npm run dev. Never commit .env, deployment tokens or Admin API credentials.
 
-The pinned versions and lockfile are authoritative. This app uses Hydrogen 2026.10.1, React Router 8.4.0, React 19.3.0 and Vite 8.3.4.
+The pinned versions and lockfile are authoritative. This app uses Hydrogen 2026.10.3, React Router 8.4.0, React 19.3.1 and Vite 8.3.8.
 
 ## Validation
 
-Run npm run typecheck and npm run build. With Node 24, run node --experimental-strip-types --test tests/*.test.mjs tests/*.test.ts for local regression tests. The read-only scripts/seo-preflight.mjs supports --url=https://your-preview-host/ and optional --live for canonical-domain checks.
+Run npm run check for typechecking, regression tests and the production build. The GitHub checks workflow runs the same command on Node 24 without deploying. The read-only scripts/seo-preflight.mjs supports --url=https://your-preview-host/ and optional --live for canonical-domain checks. Run npm run health:check -- --url=https://equatorstores.com --product=published-product-handle from Pakistan for real content checks. This script is not a hosted monitor or alert service.
 
 ## Configuration and Shopify content
 
@@ -30,8 +30,12 @@ Includes application source, public assets, dependency lockfile, configuration e
 
 ## Current production snapshot
 
-Includes the latest emblem favicon, SKU search, collection view controls, request deadline handling, cookie-header compatibility and Pakistan-only server guard. The recorded production deployment is https://01m7308635br5vm0jbk9jdtw7a-c44fa3d9f1c9b96db824.myshopify.dev/. Runtime settings are not source code and must be obtained separately from authorized Shopify access.
+Includes the latest emblem favicon, SKU search, collection view controls, request deadline handling, cookie-header compatibility and Pakistan-only server guard. The recorded production deployment is https://01m7hh2r6nrjrv2mvtqvynw9w3-c44fa3d9f1c9b96db824.myshopify.dev/. Runtime settings are not source code and must be obtained separately from authorized Shopify access.
 
-The separate Kiwi size-guide improvement was tested on Client Preview only and was deliberately excluded from the favicon production release. This snapshot retains the production Kiwi component; pending preview work remains in the original workspace and must be verified before deployment.
+The reliability release caches completed data rather than sharing unfinished server fetches across requests, bounds public rendering and browser JSON reads, rejects invalid pagination, sanitizes merchant HTML, normalizes legacy shopping links, and preserves loaded Kiwi charts across size changes. Mutations are never retried automatically on timeout. Production server sourcemaps are built separately from public client assets; the Hydrogen plugin supplies the Oxygen runtime compatibility date. Dependency overrides keep development tooling on compatible patched versions.
+
+Before release, 196 tests, typechecking, build and 140 local route/API checks passed. Preview verified product rendering, loaded size-chart images after a size change, cart add/update/remove and the hosted checkout form without placing an order. Preserve the previous production deployment for rollback: https://01m7gasfn0g9brkw52tzk874w6-c44fa3d9f1c9b96db824.myshopify.dev/. Reverting source alone does not revert saved environment variables. Verify cookies, cart, canonical URLs and health after every production deployment.
+
+Do not store a pending fetch Promise in a module-level cache on Oxygen. Cache completed values only; unfinished I/O belongs to its creating request. No audit guarantees zero future incidents. Account-side analytics receipts, real payment capture and individual networks need separate verification. Product ad/catalogue URLs should use equatorstores.com directly; genuine checkout URLs remain on checkout.equatorstores.com.
 
 `PK_ONLY_ENABLED=true` enables the production Pakistan-only guard; `PK_ONLY_ALLOW_SEARCH_BOTS=true` allows the supported verified Google/Google Ads/Bing crawler ranges. Other overseas visitors, including Meta/TikTok ad reviewers, remain blocked under the approved strict policy. Keep these flags disabled on a general-purpose development preview. This guard does not protect separately hosted Shopify checkout. Cloudflare DNS must remain DNS-only; do not enable a proxy in front of Oxygen. See app/lib/pakistan-only.server.ts and its tests for behavior and rollback.

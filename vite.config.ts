@@ -9,12 +9,12 @@ export default defineConfig(({mode}) => {
     if (env[key] && !process.env[key]) process.env[key] = env[key];
   }
   const oxygenPlugins=oxygen();
-  // MiniOxygen 4.2.3 pins workerd 2025-03-10; use its supported date locally.
-  oxygenPlugins.find(plugin=>plugin.name==='oxygen:main')?.api.registerPluginOptions({compatibilityDate:'2025-03-10'});
+  // Let Hydrogen declare the production runtime date. MiniOxygen 4.3 caps it
+  // only for the local workerd version; never emit a stale date to production.
   return {
     plugins: [...oxygenPlugins, tailwindcss(), reactRouter()],
     build: {assetsInlineLimit: 0},
-    environments: {ssr: {build: {rollupOptions: {input:'./server.ts'}}}},
+    environments: {ssr: {build: {sourcemap:true,rollupOptions: {input:'./server.ts'}}}},
     ssr: {optimizeDeps: {include: ['react','react/jsx-runtime','react/jsx-dev-runtime','react-dom','react-dom/server','react-router > set-cookie-parser','react-router > cookie','react-router']}},
   };
 });
