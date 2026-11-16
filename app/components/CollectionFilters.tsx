@@ -51,7 +51,7 @@ export function CollectionFilters({open,onClose,filters,state,currency,onApply,i
     </FilterGroup>)}
    </div>
    <div role="tabpanel" id="collection-sort-panel" aria-labelledby="collection-sort-tab" hidden={tab!=='sort'} className="collection-tab-content">
-    <FilterGroup title="Sort"><div className="collection-sort-values">{collectionSortOptions(defaultSort,draft.sort).filter(sort=>!hideBestSelling||sort.value!=='best-selling').map(sort=><label key={sort.value}><input type="radio" name="collection-sort" checked={draft.sort===sort.value} onChange={()=>setDraft({...draft,sort:sort.value})}/><span>{hideBestSelling&&sort.value==='featured'?'Relevance':sort.label}</span></label>)}</div></FilterGroup>
+    <div className="collection-sort-values" role="group" aria-label="Sort products">{collectionSortOptions(defaultSort,draft.sort).filter(sort=>!hideBestSelling||sort.value!=='best-selling').map(sort=><label key={sort.value}><input type="radio" name="collection-sort" checked={draft.sort===sort.value} onChange={()=>setDraft({...draft,sort:sort.value})}/><span>{hideBestSelling&&sort.value==='featured'?'Relevance':sort.label}</span></label>)}</div>
    </div>
   </div>
   <div className="collection-drawer-actions"><button onClick={()=>setDraft({selected:[],min:'',max:'',sort:defaultSort})}>Clear</button><button disabled={invalid||(tab==='filter'&&(loading||!!error))} onClick={()=>{onApply(draft);close();}}>Apply</button></div>
