@@ -12,6 +12,11 @@ test('does not interrupt cart, native checkout, privacy API or non-GET requests'
   const value=await withPageDeadline(request,async scoped=>{assert.equal(scoped,request);return 'unchanged';},1);assert.equal(value,'unchanged');
  }
 });
+
+test('search, content, policy and blog documents are bounded while resource routes stay untouched',()=>{
+ for(const path of ['/search?q=SKU','/collections','/pages','/pages/contact','/policies/privacy-policy','/blogs','/blogs/news','/blogs/news/story.data'])assert.equal(isDeadlinePage(new Request('https://equatorstores.com'+path)),true,path);
+ for(const path of ['/resources/baadmay','/resources/product-reviews','/account/login','/cart/c/example','/sitemap.xml'])assert.equal(isDeadlinePage(new Request('https://equatorstores.com'+path)),false,path);
+});
 test('preserves response cookies, redirect and original cancellation',async()=>{
  const controller=new AbortController();let scoped;
  const response=new Response(null,{status:302,headers:{Location:'/products/other','Set-Cookie':'test=1; Secure; HttpOnly'}});
