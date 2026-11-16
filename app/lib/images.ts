@@ -2,7 +2,7 @@
 function imageURL(value:string):URL|null {
  try {
   const url=new URL(value.startsWith('//')?`https:${value}`:value);
-  if(['equatorstores.com','www.equatorstores.com'].includes(url.hostname)&&url.pathname.startsWith('/cdn/shop/')){url.hostname='cdn.shopify.com';url.pathname='/s/files/1/0435/3713/7815/'+url.pathname.slice('/cdn/shop/'.length);url.protocol='https:';}
+  if(['equatorstores.com','www.equatorstores.com','checkout.equatorstores.com'].includes(url.hostname)&&url.pathname.startsWith('/cdn/shop/')){url.hostname='cdn.shopify.com';url.pathname='/s/files/1/0435/3713/7815/'+url.pathname.slice('/cdn/shop/'.length);url.protocol='https:';}
   const shopify=url.hostname==='cdn.shopify.com'||((url.hostname.endsWith('.myshopify.com')||['equatorstores.com','www.equatorstores.com'].includes(url.hostname))&&url.pathname.startsWith('/cdn/shop/'));
   return shopify&&['https:','http:'].includes(url.protocol)&&!/\.(svg|gif)$/i.test(url.pathname)?url:null;
  }catch{return null;}

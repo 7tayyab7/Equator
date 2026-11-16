@@ -3,6 +3,8 @@ import returnsPolicy from '../content/return-exchange-policy.json';
 import {parseDetails,splitProductDetails} from './product-details.server';
 import {cardCompareAt} from './card-pricing';
 import {requestStorefront} from './storefront.server';
+import {cleanContent} from './content-html.server';
+import {nextPageCursor} from './pagination';
 import type {ProductCardData} from './products.server';
 import {displayProductTitle,uniqueAvailable,colorLabel,colorProductHandles,type Variant,type Money} from './product-helpers';
 
@@ -18,16 +20,17 @@ export async function getProduct(env:Record<string,string>,handle:string,signal:
  const {product}=await requestStorefront<{product:Product|null}>(env,query,{handle},signal);
  if(!product)throw new Response('Product not found',{status:404});
  product.title=displayProductTitle(product.title);
- while(product.variants.pageInfo.hasNextPage){const next=await requestStorefront<{product:{variants:Product['variants']}}>(env,`query MoreVariants($handle:String!,$after:String!) @inContext(country:PK){product(handle:$handle){variants(first:250,after:$after){nodes{${variantFields}} pageInfo{hasNextPage endCursor}}}}`,{handle,after:product.variants.pageInfo.endCursor},signal);product.variants.nodes.push(...next.product.variants.nodes);product.variants.pageInfo=next.product.variants.pageInfo;}
+ const variantCursors=new Set<string>();
+ while(product.variants.pageInfo.hasNextPage){const after=nextPageCursor(product.variants.pageInfo,variantCursors);const next=await requestStorefront<{product:{variants:Product['variants']}|null}>(env,`query MoreVariants($handle:String!,$after:String!) @inContext(country:PK){product(handle:$handle){variants(first:250,after:$after){nodes{${variantFields}} pageInfo{hasNextPage endCursor}}}}`,{handle,after},signal);if(!next.product)throw new Response('Product not found',{status:404});product.variants.nodes.push(...next.product.variants.nodes);product.variants.pageInfo=next.product.variants.pageInfo;}
  const extras=await getExtras(env,product,{colors:[],care:customerCare.body,returns:null},signal);
  const extracted=splitProductDetails(product.descriptionHtml);
  const details=product.detailsMetafield?.type==='multi_line_text_field'?parseDetails(product.detailsMetafield.value):extracted.details;
- return {product,...extras,descriptionHtml:extracted.descriptionHtml,details};
+ return {product,...extras,descriptionHtml:cleanContent(extracted.descriptionHtml),details};
 }
 async function getExtras(env:Record<string,string>,product:Product,legacy:LegacyContent,signal:AbortSignal){
 
  const collection=product.collections.nodes.find(c=>!/sale|discount|size|test|all|new|best|natws|wstoss/i.test(c.title))||product.collections.nodes[0];
- const defaults={colors:[{handle:product.handle,title:colorLabel(product.descriptionHtml,product.title),image:product.images.nodes[0]?.url}],care:legacy.care,returns:returnsPolicy.body,shipping:null as string|null,pair:[] as ProductCardData[],related:[] as ProductCardData[]};
+ const defaults={colors:[{handle:product.handle,title:colorLabel(product.descriptionHtml,product.title),image:product.images.nodes[0]?.url}],care:legacy.care,returns:cleanContent(returnsPolicy.body),shipping:null as string|null,pair:[] as ProductCardData[],related:[] as ProductCardData[]};
  try{
  const colorHandles=[...new Set([...colorProductHandles(product.handle),...legacy.colors])];
  const aliases=colorHandles.map((_,i)=>`c${i}:product(handle:$c${i}){handle title descriptionHtml images(first:1){nodes{url}}}`).join(' ');
@@ -37,6 +40,6 @@ async function getExtras(env:Record<string,string>,product:Product,legacy:Legacy
  const related=uniqueAvailable(relatedPool,[product.id,...pair.map(p=>p.id)]);
  type ColorProduct={handle:string;title:string;descriptionHtml:string;images:{nodes:{url:string}[]}};
  const colors=colorHandles.map((_,i)=>data[`c${i}`] as ColorProduct|null).filter((p):p is ColorProduct=>!!p).map(p=>({handle:p.handle,title:colorLabel(p.descriptionHtml,p.title),image:p.images.nodes[0]?.url}));
- return {...defaults,colors:colors.length?colors:defaults.colors,pair,related:related.map(toCard),shipping:data.shipping?.body||null,returns:returnsPolicy.body};
+ return {...defaults,colors:colors.length?colors:defaults.colors,pair,related:related.map(toCard),shipping:data.shipping?.body?cleanContent(data.shipping.body):null};
  }catch{return {...defaults,pair:[]};}
 }

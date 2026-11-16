@@ -15,7 +15,8 @@ export function resolveShopifyRedirect(url:URL,rows:UrlRedirect[]){
  for(let depth=0;depth<20;depth++){
   if(seen.has(current))return null;seen.add(current);target=map.get(current);if(!target)break;found=true;
   let next:URL;try{next=new URL(target,url.origin);}catch{return null;}if(!['http:','https:'].includes(next.protocol))return null;
-  if(!['equatorstores.com','www.equatorstores.com','equatorstores.myshopify.com',url.hostname].includes(next.hostname))return next.href;
+  const legacyShopping=next.hostname==='checkout.equatorstores.com'&&/^\/(?:products|collections|pages|policies|blogs)(?:\/|$)/.test(next.pathname);
+  if(!legacyShopping&&!['equatorstores.com','www.equatorstores.com','equatorstores.myshopify.com',url.hostname].includes(next.hostname))return next.href;
   for(const [key,value] of carried)if(!next.searchParams.has(key))next.searchParams.append(key,value);carried=next.searchParams;
   current=normalizedPath(next.pathname);
   if(!map.has(current)){

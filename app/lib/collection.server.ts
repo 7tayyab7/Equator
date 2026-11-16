@@ -1,4 +1,5 @@
 import {getCollectionDefaultSort} from './collection-default.server';
+import {nextPageCursor} from './pagination';
 import {fastCollectionFirstPage,collectionPageSort} from './collection-first-page';
 import {cardFields,toCard,type CardNode} from './product.server';
 import {requestStorefront} from './storefront.server';
@@ -52,19 +53,18 @@ async function loadCatalog(env:Record<string,string>,handle:string,signal:AbortS
   const data:{collection?:{products:{nodes:ProductIndex[];pageInfo:PageInfo}}|null;products?:{nodes:ProductIndex[];pageInfo:PageInfo}}=await requestStorefront(env,query,{handle,after,...metaVariables},signal);
   const connection=synthetic?data.products:data.collection?.products;
   if(!connection)throw new Response('Collection not found',{status:404});
-  products.push(...connection.nodes.map(product=>({...product,vendor:product.vendor||'',tags:product.tags||[]})));after=connection.pageInfo.hasNextPage?connection.pageInfo.endCursor:null;
-  if(after){if(cursors.has(after))throw new Response('Collection pagination unavailable',{status:503});cursors.add(after);}
+  products.push(...connection.nodes.map(product=>({...product,vendor:product.vendor||'',tags:product.tags||[]})));after=nextPageCursor(connection.pageInfo,cursors);
  }while(after);
  // Clothing normally has fewer than twenty sizes. Complete larger variant sets too.
- for(const product of products){while(product.variants.pageInfo.hasNextPage){const previous=product.variants.pageInfo.endCursor;const more=await requestStorefront<{node:{variants:ProductIndex['variants']}}>(env,`query RemainingCollectionVariants($id:ID!,$after:String!${variantMeta.length?',$variantMeta:[HasMetafieldsIdentifier!]!':''}) @inContext(country:PK,language:EN){node(id:$id){... on Product{variants(first:250,after:$after){nodes{${variantFields}}pageInfo{hasNextPage endCursor}}}}}`,{id:product.id,after:previous,...(variantMeta.length?{variantMeta}:{})},signal);if(!more.node||more.node.variants.pageInfo.hasNextPage&&more.node.variants.pageInfo.endCursor===previous)throw new Response('Variant availability unavailable',{status:503});product.variants.nodes.push(...more.node.variants.nodes);product.variants.pageInfo=more.node.variants.pageInfo;}}
+ for(const product of products){const variantCursors=new Set<string>();while(product.variants.pageInfo.hasNextPage){const previous=nextPageCursor(product.variants.pageInfo,variantCursors);const more=await requestStorefront<{node:{variants:ProductIndex['variants']}}>(env,`query RemainingCollectionVariants($id:ID!,$after:String!${variantMeta.length?',$variantMeta:[HasMetafieldsIdentifier!]!':''}) @inContext(country:PK,language:EN){node(id:$id){... on Product{variants(first:250,after:$after){nodes{${variantFields}}pageInfo{hasNextPage endCursor}}}}}`,{id:product.id,after:previous,...(variantMeta.length?{variantMeta}:{})},signal);if(!more.node||more.node.variants.pageInfo.hasNextPage&&more.node.variants.pageInfo.endCursor===previous)throw new Response('Variant availability unavailable',{status:503});product.variants.nodes.push(...more.node.variants.nodes);product.variants.pageInfo=more.node.variants.pageInfo;}}
  const defaultSort=synthetic?'title-ascending':await defaultSortPromise;
  const value={metadata,filters,products,defaultSort,synthetic};if(cache.size>=6)cache.delete(cache.keys().next().value!);cache.set(key,{expires:Date.now()+60_000,value});return value;
 }
 async function collectionRank(env:Record<string,string>,handle:string,signal:AbortSignal,sortKey:'MANUAL'|'BEST_SELLING',synthetic:boolean){
- const ids:string[]=[];let after:string|null=null;
+ const ids:string[]=[],seen=new Set<string>();let after:string|null=null;
  const wrapped=`query CollectionSalesOrder($handle:String!,$after:String){collection(handle:$handle){products(first:250,after:$after,sortKey:${sortKey}){nodes{id}pageInfo{hasNextPage endCursor}}}}`;
  const query=synthetic?wrapped.replace('$handle:String!,','').replace('collection(handle:$handle){','').replace('sortKey:MANUAL','sortKey:ID').slice(0,-1):wrapped;
- do{const data:{collection?:{products:{nodes:{id:string}[];pageInfo:PageInfo}};products?:{nodes:{id:string}[];pageInfo:PageInfo}}=await requestStorefront(env,query,{handle,after},signal);const connection=synthetic?data.products:data.collection?.products;if(!connection)break;ids.push(...connection.nodes.map(p=>p.id));after=connection.pageInfo.hasNextPage?connection.pageInfo.endCursor:null;}while(after);
+ do{const data:{collection?:{products:{nodes:{id:string}[];pageInfo:PageInfo}};products?:{nodes:{id:string}[];pageInfo:PageInfo}}=await requestStorefront(env,query,{handle,after},signal);const connection=synthetic?data.products:data.collection?.products;if(!connection)break;ids.push(...connection.nodes.map(p=>p.id));after=nextPageCursor(connection.pageInfo,seen);}while(after);
  return new Map(ids.map((id,index)=>[id,index]));
 }
 export async function getCollection(env:Record<string,string>,handle:string,url:URL,signal:AbortSignal){
