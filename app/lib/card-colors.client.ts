@@ -1,5 +1,6 @@
 import {colorProductHandles} from './product-helpers';
 import type {CardColor} from './card-colors.server';
+import {requestJSON} from './json-request.client';
 // Share and batch discovery across cards/rails. Never hold up the product loader or primary image.
 const cache=new Map<string,{expires:number;promise:Promise<CardColor[]>}>();
 const pending:{handle:string;resolve:(colors:CardColor[])=>void;reject:(error:unknown)=>void}[]=[];
@@ -8,8 +9,8 @@ function flush(){
  scheduled=false;
  while(active<2&&pending.length){
   const batch=pending.splice(0,4);active++;
-  fetch(`/resources/card-colors?handles=${batch.map(item=>item.handle).join(',')}`)
-   .then(async response=>{if(!response.ok)throw new Error('Color discovery unavailable');return await response.json() as Record<string,CardColor[]>;})
+  requestJSON<Record<string,CardColor[]>>(`/resources/card-colors?handles=${batch.map(item=>item.handle).join(',')}`,{},15000)
+   .then(({response,data})=>{if(!response.ok)throw new Error('Color discovery unavailable');return data;})
    .then(data=>batch.forEach(item=>item.resolve(data[item.handle]||[])))
    .catch(error=>batch.forEach(item=>{cache.delete(colorProductHandles(item.handle)[0]);item.reject(error);}))
    .finally(()=>{active--;flush();});

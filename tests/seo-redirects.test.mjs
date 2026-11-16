@@ -6,3 +6,8 @@ test('merchant external HTTPS redirects remain external and unknown paths remain
 test('trailing slashes and former Shopify sitemap links have permanent destinations',()=>{assert.equal(legacyTarget(new URL('https://preview.example/collections/shirts/?page=2')),'/collections/shirts?page=2');assert.equal(legacyTarget(new URL('https://preview.example/sitemap_products_1.xml?from=1')),'/sitemap.xml');});
 
 test('double-slash request paths never become protocol-relative open redirects',()=>{assert.equal(legacyTarget(new URL('https://preview.example//evil.example/')),null);});
+
+test('legacy checkout-domain shopping redirects retain attribution on Hydrogen without changing hosted checkout',()=>{
+ assert.equal(resolveShopifyRedirect(new URL('https://equatorstores.com/old?variant=123&utm_source=facebook'),[{path:'/old',target:'https://checkout.equatorstores.com/products/shirt'}]),'/products/shirt?variant=123&utm_source=facebook');
+ assert.equal(resolveShopifyRedirect(new URL('https://equatorstores.com/old'),[{path:'/old',target:'https://checkout.equatorstores.com/checkouts/example'}]),'https://checkout.equatorstores.com/checkouts/example');
+});

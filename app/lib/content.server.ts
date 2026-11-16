@@ -6,6 +6,7 @@ import {cleanContent} from './content-html.server';
 import editorialData from '../content/editorial-pages.json';
 import {cardFields,toCard,type CardNode} from './product.server';
 import {uniqueAvailable} from './product-helpers';
+import {nextPageCursor} from './pagination';
 export type PageInfo={hasNextPage:boolean;hasPreviousPage:boolean;startCursor:string|null;endCursor:string|null};
 type Page={id:string;handle:string;title:string;body:string;seo:{title:string|null;description:string|null}};
 type EditorialImage={url:string;width:number;height:number;alt:string};
@@ -28,8 +29,8 @@ export async function getPolicy(env:Record<string,string>,handle:string,signal:A
  if(!policy?.body)throw new Response('Policy not found',{status:404});return {handle,...policy,body:cleanContent(policy.body)};
 }
 export async function contentDirectory(env:Record<string,string>,signal:AbortSignal){
- const pages:{handle:string;title:string}[]=[];let after:string|null=null;
- do{const result: {pages:{nodes:{handle:string;title:string}[];pageInfo:{hasNextPage:boolean;endCursor:string}}}=await requestStorefront(env,`query ContentDirectory($after:String){pages(first:100,after:$after){nodes{handle title}pageInfo{hasNextPage endCursor}}}`,{after},signal);pages.push(...result.pages.nodes);after=result.pages.pageInfo.hasNextPage?result.pages.pageInfo.endCursor:null;}while(after);
+ const pages:{handle:string;title:string}[]=[],seen=new Set<string>();let after:string|null=null;
+ do{const result: {pages:{nodes:{handle:string;title:string}[];pageInfo:{hasNextPage:boolean;endCursor:string}}}=await requestStorefront(env,`query ContentDirectory($after:String){pages(first:100,after:$after){nodes{handle title}pageInfo{hasNextPage endCursor}}}`,{after},signal);pages.push(...result.pages.nodes);after=nextPageCursor(result.pages.pageInfo,seen);}while(after);
  return pages;
 }
 const articleCardFields=`id handle title publishedAt excerpt content image{url altText width height} authorV2{name} tags`;
@@ -39,8 +40,8 @@ export async function getBlog(env:Record<string,string>,handle:string,url:URL,si
  slug(handle);const q=(url.searchParams.get('q')||'').trim().slice(0,120),key=env.PUBLIC_STORE_DOMAIN+':'+handle+':'+q;
  let hit=blogCursorCache.get(key);
  if(!hit||hit.expires<Date.now()){
-  const cursors:string[]=[];let after:string|null=null;
-  do{const d:{blog:{articles:{edges:{cursor:string}[];pageInfo:{hasNextPage:boolean;endCursor:string|null}}}|null}=await requestStorefront(env,`query BlogPageIndex($handle:String!,$after:String,$query:String){blog(handle:$handle){articles(first:250,after:$after,sortKey:PUBLISHED_AT,reverse:true,query:$query){edges{cursor}pageInfo{hasNextPage endCursor}}}}`,{handle,after,query:q||null},signal);if(!d.blog)throw new Response('Blog not found',{status:404});cursors.push(...d.blog.articles.edges.map(edge=>edge.cursor));after=d.blog.articles.pageInfo.hasNextPage?d.blog.articles.pageInfo.endCursor:null;}while(after);
+  const cursors:string[]=[],seen=new Set<string>();let after:string|null=null;
+  do{const d:{blog:{articles:{edges:{cursor:string}[];pageInfo:{hasNextPage:boolean;endCursor:string|null}}}|null}=await requestStorefront(env,`query BlogPageIndex($handle:String!,$after:String,$query:String){blog(handle:$handle){articles(first:250,after:$after,sortKey:PUBLISHED_AT,reverse:true,query:$query){edges{cursor}pageInfo{hasNextPage endCursor}}}}`,{handle,after,query:q||null},signal);if(!d.blog)throw new Response('Blog not found',{status:404});cursors.push(...d.blog.articles.edges.map(edge=>edge.cursor));after=nextPageCursor(d.blog.articles.pageInfo,seen);}while(after);
   hit={expires:Date.now()+300000,cursors};blogCursorCache.set(key,hit);if(blogCursorCache.size>30)blogCursorCache.delete(blogCursorCache.keys().next().value!);
  }
  const pagination=blogPagination(url.searchParams,hit.cursors);
@@ -48,7 +49,7 @@ export async function getBlog(env:Record<string,string>,handle:string,url:URL,si
  if(!data.blog)throw new Response('Blog not found',{status:404});return {blog:data.blog,q,pagination};
 }
 export async function getArticle(env:Record<string,string>,blogHandle:string,handle:string,signal:AbortSignal){
- slug(blogHandle);slug(handle);const datesPromise=articleDates(env).catch(()=>new Map<string,string>());const data=await requestStorefront<{blog:{handle:string;title:string;articleByHandle:(ArticleCard&{contentHtml:string;seo:{title:string|null;description:string|null}})|null;articles:{nodes:ArticleCard[]}}|null}>(env,`query Article($blog:String!,$handle:String!){blog(handle:$blog){handle title articleByHandle(handle:$handle){${articleCardFields} contentHtml seo{title description}}articles(first:4,sortKey:PUBLISHED_AT,reverse:true){nodes{${articleCardFields}}}}}`,{blog:blogHandle,handle},signal);
+ slug(blogHandle);slug(handle);const datesPromise=articleDates(env,signal).catch(()=>new Map<string,string>());const data=await requestStorefront<{blog:{handle:string;title:string;articleByHandle:(ArticleCard&{contentHtml:string;seo:{title:string|null;description:string|null}})|null;articles:{nodes:ArticleCard[]}}|null}>(env,`query Article($blog:String!,$handle:String!){blog(handle:$blog){handle title articleByHandle(handle:$handle){${articleCardFields} contentHtml seo{title description}}articles(first:4,sortKey:PUBLISHED_AT,reverse:true){nodes{${articleCardFields}}}}}`,{blog:blogHandle,handle},signal);
  if(!data.blog?.articleByHandle)throw new Response('Article not found',{status:404});const {articleByHandle,...blog}=data.blog;
  return {blog,article:{...articleByHandle,updatedAt:(await datesPromise).get(articleByHandle.handle),contentHtml:cleanContent(articleByHandle.contentHtml)},related:blog.articles.nodes.filter(a=>a.id!==articleByHandle.id).slice(0,3)};
 }

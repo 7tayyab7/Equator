@@ -15,9 +15,12 @@ export function KiwiSizeGuide({product,variantID,sku,onVariantChange,onAdd,selec
  const dialog=useRef<HTMLDialogElement>(null),mount=useRef<HTMLDivElement>(null),loaded=useRef('');
  const titleID=useId(),dialogID=useId();
  const opening=useRef(false);opening.current=open;
- const productID=product.id.split('/').pop()!,variant=variantID.split('/').pop()||'';
- const requestKey=`${productID}:${variant}`;
- const productData=JSON.stringify({productID,title:product.title,images:product.gallery.nodes.map(image=>image.url),tags:product.tags.join(','),collections:product.collections.nodes.map(collection=>collection.id.split('/').pop()).join(','),vendor:product.vendor,type:product.productType,sku});
+ const productID=product.id.split('/').pop()!;
+ // A garment's measurements do not change when its purchase size changes.
+ // Keep Kiwi's matching variant/SKU stable for this product mount.
+ const chartSelection=useRef({variant:variantID.split('/').pop()||'',sku});
+ const variant=chartSelection.current.variant,requestKey=productID;
+ const productData=JSON.stringify({productID,title:product.title,images:product.gallery.nodes.map(image=>image.url),tags:product.tags.join(','),collections:product.collections.nodes.map(collection=>collection.id.split('/').pop()).join(','),vendor:product.vendor,type:product.productType,sku:chartSelection.current.sku});
  // Warm only this product's guide after its primary image, during idle time.
  // Explicit intent still starts immediately, including on data-saving networks.
  useEffect(()=>{
@@ -34,7 +37,7 @@ export function KiwiSizeGuide({product,variantID,sku,onVariantChange,onAdd,selec
   if(!open)return;
   mount.current?.querySelectorAll('img').forEach(image=>{image.fetchPriority='high';});
   const previous=document.activeElement as HTMLElement|null,overflow=document.body.style.overflow;
-  dialog.current?.showModal();document.body.style.overflow='hidden';
+  dialog.current?.showModal();dialog.current?.querySelector('.kiwi-guide-body')?.scrollTo({top:0});document.body.style.overflow='hidden';
   return()=>{dialog.current?.close();document.body.style.overflow=overflow;if(previous?.isConnected)previous.focus();};
  },[open]);
  useEffect(()=>{
@@ -92,10 +95,10 @@ export function KiwiSizeGuide({product,variantID,sku,onVariantChange,onAdd,selec
   <dialog id={dialogID} className="kiwi-guide-dialog" ref={dialog} aria-labelledby={titleID} onCancel={()=>setOpen(false)} onClose={()=>setOpen(false)} onClick={event=>{if(event.target===event.currentTarget){const box=event.currentTarget.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)setOpen(false);}}}>
    <header><h2 id={titleID}>Size guide</h2><button type="button" aria-label="Close size guide" onClick={()=>setOpen(false)}>×</button></header>
    <div className="kiwi-guide-body">
-    <div className="kiwi-guide-photos">{product.gallery.nodes.slice(0,2).map((image,index)=><img key={image.url} {...responsiveImage(image.url,400,[200,400,600,800],'(max-width:767px) 40vw, 240px',image.width)} width={image.width} height={image.height} alt={`${product.title} — view ${index+1}`} loading="lazy" decoding="async"/>)}</div>
     <p className="kiwi-guide-product">{product.title}</p>
     {status==='loading'&&<p className="kiwi-guide-status" role="status">Loading size chart…</p>}
     <div key={requestKey} id="KiwiSizingChart" ref={mount} data-product={productID} data-variant={variant} data-display-mode="0" data-recommender-display-mode="0"/>
+    <div className="kiwi-guide-photos">{product.gallery.nodes.slice(0,2).map((image,index)=><img key={image.url} {...responsiveImage(image.url,400,[200,400,600,800],'(max-width:767px) 40vw, 240px',image.width)} width={image.width} height={image.height} alt={`${product.title} — view ${index+1}`} loading="lazy" decoding="async"/>)}</div>
     {status==='unavailable'&&<div className="kiwi-guide-status" role="status"><p>The size chart could not be loaded here.</p><button type="button" onClick={()=>setAttempt(value=>value+1)}>Try again</button><a href="https://wa.me/923334919028" target="_blank" rel="noopener noreferrer">Ask Equator for sizing help <ArrowIcon direction="up-right"/></a></div>}
    </div>
    <footer className="kiwi-guide-footer">

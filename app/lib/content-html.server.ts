@@ -1,13 +1,14 @@
 import {responsiveImage} from './images.ts';
 import sanitizeHtml from 'sanitize-html';
 
-const storeHosts=new Set(['equatorstores.com','www.equatorstores.com','equatorstores.myshopify.com']);
+const storeHosts=new Set(['equatorstores.com','www.equatorstores.com','equatorstores.myshopify.com','checkout.equatorstores.com']);
 export function contentLink(href:string){
  try{const url=new URL(href,'https://equatorstores.com');
   if(!['https:','http:','mailto:','tel:'].includes(url.protocol))return '';
   if(storeHosts.has(url.hostname)){
    const path=url.pathname.replace(/^\/collections\/[^/]+\/products\//,'/products/');
    if(/^\/(?:products|collections|pages|policies|blogs)(?:\/|$)|^\/(?:cart|search)\/?$|^\/$/.test(path))return `${path}${url.search}${url.hash}`;
+   if(url.hostname==='checkout.equatorstores.com')return url.href;
    return `https://equatorstores.com${path}${url.search}${url.hash}`;
   }return url.href;
  }catch{return '';}

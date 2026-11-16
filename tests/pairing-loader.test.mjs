@@ -38,3 +38,17 @@ test('discounted matches are returned promptly and later page errors preserve pa
  assert.deepEqual((await loader({PUBLIC_STORE_DOMAIN:'test'},{id:'top',productType:'Sweater'},'images(first:100)',new AbortController().signal)).map(p=>p.id),['sale']);
  assert.equal(pageCalls,2);
 });
+
+test('a stalled first shopper cannot hold another shopper’s pairing request',async()=>{
+ const candidate=item('pants','Pants');let pageCalls=0,recommendationCalls=0,releasePage,releaseRecommendations;
+ const loader=createPairingLoader(async(_env,query)=>{
+  if(query.includes('PairingRecommendations')){if(++recommendationCalls===1)return new Promise((_,reject)=>{releaseRecommendations=()=>reject(Error('Disconnected'));});return {productRecommendations:[]};}
+  if(query.includes('PairingGallery'))return {nodes:[candidate]};
+  if(++pageCalls===1)return new Promise((_,reject)=>{releasePage=()=>reject(Error('Disconnected'));});
+  return {products:{nodes:[candidate],pageInfo:{hasNextPage:false,endCursor:null}}};
+ });
+ const source={id:'top',productType:'Sweater'},env={PUBLIC_STORE_DOMAIN:'independent.example'};
+ const first=loader(env,source,'images(first:100)',new AbortController().signal,[],1);let timer;
+ try{await new Promise(resolve=>setImmediate(resolve));const second=await Promise.race([loader(env,source,'images(first:100)',new AbortController().signal,[],1),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Cross-request stall')),100);})]);assert.deepEqual(second.map(p=>p.id),['pants']);assert.equal(pageCalls,2);assert.equal(recommendationCalls,2);}
+ finally{clearTimeout(timer);releasePage?.();releaseRecommendations?.();await first.catch(()=>{});}
+});
