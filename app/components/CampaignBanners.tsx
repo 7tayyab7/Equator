@@ -1,4 +1,4 @@
-import {imageSrcSet,shopifyImageURL} from '../lib/images';
+import {campaignImageSources} from '../lib/campaign-images';
 import {useStoreMenu} from './StoreNavigationProvider';
 import {collectionGroup,collectionHref} from '../lib/collection-navigation';
 import {useEffect,useRef,useState,type CSSProperties} from 'react';
@@ -146,14 +146,15 @@ export function CampaignBanners() {
     {banners.map((banner,index)=><div className="campaign-scroll-marker" id={`campaign-${banner.id}`} key={banner.id} style={{top:`${index*100}svh`}}/>)}
     <div className="campaign-sticky">
       {banners.map((banner,index)=>{
+        const images=campaignImageSources(banner);
         const style={'--desktop-top':`${banner.desktopTop}%`,'--mobile-top':`${banner.mobileTop}%`,'--desktop-heading-width':`${banner.desktopHeadingMaxWidth}px`,'--mobile-heading-width':`${banner.mobileHeadingMaxWidth}px`,zIndex:index} as CSSProperties;
         const button=<Link prefetch="intent" className="campaign-button" tabIndex={index===active?0:-1} to={collectionGroup(menu,banner.href,null)?collectionHref(banner.href,collectionGroup(menu,banner.href,null)!.title):banner.href}>{banner.buttonText}</Link>;
         return <section key={banner.id} aria-label={title(banner)} aria-hidden={index!==active} className={`campaign-banner tone-${banner.color} desktop-${banner.desktopPlacement} mobile-${banner.mobilePlacement} button-${banner.buttonLayout}`} style={style} data-parallax={banner.parallax} data-revealed={index===active} data-animation={banner.animationEnabled?banner.animationDirection:'none'}>
           {Math.abs(index-active)<=1&&<picture className="campaign-picture">
-            <source media="(max-width:850px)" sizes="100vw" srcSet={banner.mobileImageUrl?imageSrcSet(banner.mobileImageUrl,[390,600,780,960,1200],banner.mobileImageWidth)||banner.mobileImageUrl:`/images/banners/campaign-${banner.mobileImage}-mobile-440.webp`} width={banner.mobileImageWidth||440} height={banner.mobileImageHeight||901}/>
-            <img className="campaign-image" src={banner.desktopImageUrl?shopifyImageURL(banner.desktopImageUrl,1920):`/images/banners/campaign-${banner.desktopImage}-desktop-1728.webp`} srcSet={banner.desktopImageUrl?imageSrcSet(banner.desktopImageUrl,[960,1280,1600,1920,2560,3200,3840],banner.desktopImageWidth):[960,1440,1728].map(width=>`/images/banners/campaign-${banner.desktopImage}-desktop-${width}.webp ${width}w`).join(', ')} sizes="100vw" alt={banner.alt.trim()||`Equator ${title(banner)} collection campaign`} width={banner.desktopImageWidth||1728} height={banner.desktopImageHeight||1035} loading={index===active||warmed===active&&index===active+1?'eager':'lazy'} fetchPriority={index===active?'high':'low'} onLoad={()=>{if(index===active)setWarmed(index);}} decoding="async"/>
+            <source media="(max-width:850px)" srcSet={images.mobile.srcSet} sizes={images.mobile.sizes} width={images.mobile.width} height={images.mobile.height}/>
+            <img className="campaign-image" {...images.desktop} alt={banner.alt.trim()||`Equator ${title(banner)} collection campaign`} loading={index===active||warmed===active&&index===active+1?'eager':'lazy'} fetchPriority={index===active?'high':'low'} onLoad={()=>{if(index===active)setWarmed(index);}} decoding="async"/>
           </picture>}
-          <Link prefetch={index===active?'render':'none'} className="campaign-banner-link" to={collectionGroup(menu,banner.href,null)?collectionHref(banner.href,collectionGroup(menu,banner.href,null)!.title):banner.href} aria-label={`Shop ${title(banner)}`} tabIndex={index===active?0:-1}/>
+          <Link prefetch={index===active?(warmed===active?'render':'intent'):'none'} className="campaign-banner-link" to={collectionGroup(menu,banner.href,null)?collectionHref(banner.href,collectionGroup(menu,banner.href,null)!.title):banner.href} aria-label={`Shop ${title(banner)}`} tabIndex={index===active?0:-1}/>
           <div className="campaign-content">
             <div className="campaign-copy">
               {banner.showText&&<><h2 className="campaign-heading">{banner.heading}{banner.emphasis&&<>{banner.headingBreak?<br/>:' '}<strong>{banner.emphasis}</strong></>}</h2>{banner.description&&<p>{banner.description}</p>}</>}
