@@ -3,10 +3,9 @@ import {storefrontContext, environmentContext} from './storefront.context';
 import type {Route} from './+types/root';
 
 export const storefrontMiddleware: Route.MiddlewareFunction = async ({request, context}, next) => {
-  const localEnv = typeof process !== 'undefined' ? process.env : {};
   const env:Record<string,string> = {
-    PUBLIC_STORE_DOMAIN: localEnv.PUBLIC_STORE_DOMAIN || '',
-    PUBLIC_STOREFRONT_API_TOKEN: localEnv.PUBLIC_STOREFRONT_API_TOKEN || '',
+    PUBLIC_STORE_DOMAIN: '',
+    PUBLIC_STOREFRONT_API_TOKEN: '',
     ...context.get(environmentContext),
   };
   context.set(environmentContext, env);
