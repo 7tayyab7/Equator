@@ -15,6 +15,6 @@ export default defineConfig(({mode}) => {
     plugins: [...oxygenPlugins, tailwindcss(), reactRouter()],
     build: {assetsInlineLimit: 0},
     environments: {ssr: {build: {sourcemap:true,rollupOptions: {input:'./server.ts'}}}},
-    ssr: {optimizeDeps: {include: ['react','react/jsx-runtime','react/jsx-dev-runtime','react-dom','react-dom/server','react-router > set-cookie-parser','react-router > cookie','react-router']}},
+    ssr: {optimizeDeps: {include: ['react','react/jsx-runtime','react/jsx-dev-runtime','react-dom','react-dom/server','react-dom/server.edge','react-router','sanitize-html','ipaddr.js','isbot']}},
   };
 });

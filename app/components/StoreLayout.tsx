@@ -6,7 +6,8 @@ import {collectionHref} from '../lib/collection-navigation';
 import {StoreWordmark} from './StoreWordmark';
 import {WishlistContents} from './WishlistContents';
 import {useWishlist} from './WishlistProvider';
-import {useEffect, useRef, useState, type ReactNode, type FormEvent} from 'react';
+import {useEffect, useRef, useState, type ReactNode, type FormEvent, type KeyboardEvent} from 'react';
+import {earlyDropdownCSS,takeEarlyPanel} from '../lib/early-menu';
 import {Link, useLocation, useNavigate, useNavigation} from 'react-router';
 import type {settings as defaultSettings,MenuGroup} from '../settings';
 import {useCart, BagContents} from './CartProvider';
@@ -85,6 +86,8 @@ export function StoreLayout({settings, children,hostedStoreOrigin}: {settings: S
 
   useEffect(() => {if (bagRequest) setPanel('bag');}, [bagRequest]);
   useEffect(() => {setActive(null); setPanel(null); setMobileGroup(null);}, [pathname]);
+  // After the reset above (effects run in order): open a menu tapped before the page was ready.
+  useEffect(() => {if (takeEarlyPanel() === 'menu') setPanel('menu');}, []);
   useEffect(()=>{if(transition.state!=="idle"){setActive(null);setPanel(null);setMobileGroup(null);}},[transition.state]);
   useEffect(() => {
     return () => {if (leaveTimer.current) clearTimeout(leaveTimer.current);};
@@ -118,15 +121,19 @@ export function StoreLayout({settings, children,hostedStoreOrigin}: {settings: S
       onMouseEnter={() => {if (leaveTimer.current) clearTimeout(leaveTimer.current);}}
       onKeyDown={event => {if (event.key === 'Escape') {event.currentTarget.querySelector<HTMLButtonElement>(`[aria-controls="menu-${active}"]`)?.focus(); setActive(null);}}}
       onBlur={event => {if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setActive(null);}}>
+      <style dangerouslySetInnerHTML={{__html:earlyDropdownCSS(settings.menu)}}/>
       <div className="header-chrome">
       <div className="header-bar">
-        <div className="mobile-header-actions"><button className="mobile-menu-trigger icon-button" onClick={() => openPanel('menu')} aria-label="Open menu" aria-haspopup="dialog"><Icon name="menu"/></button><button className="icon-button wishlist-trigger" onClick={()=>openPanel('wishlist')} aria-label={wishlistLabel} aria-haspopup="dialog"><Icon name="heart" selected={wishlistCount>0}/>{wishlistCount>0&&<span className="bag-count" aria-hidden="true">{wishlistCount}</span>}</button></div>
+        <div className="mobile-header-actions"><button className="mobile-menu-trigger icon-button" data-early-panel="menu" onClick={() => openPanel('menu')} aria-label="Open menu" aria-haspopup="dialog"><Icon name="menu"/></button><button className="icon-button wishlist-trigger" onClick={()=>openPanel('wishlist')} aria-label={wishlistLabel} aria-haspopup="dialog"><Icon name="heart" selected={wishlistCount>0}/>{wishlistCount>0&&<span className="bag-count" aria-hidden="true">{wishlistCount}</span>}</button></div>
         <nav ref={navigation} className="desktop-navigation" aria-label="Main navigation">
-          {settings.menu.map((group,index)=>({group,index})).filter(({index})=>visibleMenuIndices.includes(index)).map(({group,index}) => group.children.length ? <button key={group.title} className={`nav-type nav-link ${active === index ? 'is-active' : ''}`}
-            onMouseEnter={() => enterGroup(index)} onKeyDown={event => {if (event.key === 'ArrowDown') {event.preventDefault(); enterGroup(index);}}}
-            onClick={() => group.href.startsWith('/collections/')?navigate(collectionHref(group.href,group.title)):enterGroup(index)} aria-expanded={active === index} aria-controls={`menu-${index}`}>{group.title}</button>
-            : <Link key={group.title} className="nav-type nav-link" onMouseEnter={() => setActive(null)} to={group.href}>{group.title}</Link>)}
-          <button className="nav-type nav-link nav-more" onMouseEnter={() => setActive(null)} onClick={() => openPanel('menu')} aria-label="More navigation" aria-haspopup="dialog" aria-expanded={panel === 'menu'}>More <span aria-hidden="true">+</span></button>
+          {settings.menu.map((group,index)=>({group,index})).filter(({index})=>visibleMenuIndices.includes(index)).map(({group,index}) => {
+            if (!group.children.length) return <Link key={group.title} className="nav-type nav-link" onMouseEnter={() => setActive(null)} to={group.href}>{group.title}</Link>;
+            const dropdown={className:`nav-type nav-link ${active === index ? 'is-active' : ''}`,onMouseEnter:() => enterGroup(index),onKeyDown:(event:KeyboardEvent<HTMLElement>) => {if (event.key === 'ArrowDown') {event.preventDefault(); enterGroup(index);}},'aria-expanded':active === index,'aria-controls':`menu-${index}`};
+            // A real link, so a click works even before the page's JavaScript has started (see lib/early-menu.ts).
+            return group.href.startsWith('/collections/') ? <Link key={group.title} {...dropdown} to={collectionHref(group.href,group.title)}>{group.title}</Link>
+              : <button key={group.title} {...dropdown} onClick={() => enterGroup(index)}>{group.title}</button>;
+          })}
+          <button className="nav-type nav-link nav-more" data-early-panel="menu" onMouseEnter={() => setActive(null)} onClick={() => openPanel('menu')} aria-label="More navigation" aria-haspopup="dialog" aria-expanded={panel === 'menu'}>More <span aria-hidden="true">+</span></button>
         </nav>
         <div className="navigation-measurement" ref={measurements} aria-hidden="true">{settings.menu.map(group => <span className="nav-type" key={group.title}>{group.title}</span>)}<span className="nav-type nav-more">More <b aria-hidden="true">+</b></span></div>
         <Link className="brand" to="/" aria-label="Equator home" onMouseEnter={() => setActive(null)}>
