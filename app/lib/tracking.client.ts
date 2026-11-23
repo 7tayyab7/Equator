@@ -48,14 +48,6 @@ function insertVendorScript(id:string,candidates:string[],gate:ThirdPartyGate,at
  document.head.appendChild(tag);
  const log=win().__equatorTracking;if(log)log.vendorScripts={...log.vendorScripts,openedAt:gate.openedAt(),reason:gate.reason(),loaded:[...new Set([...(log.vendorScripts?.loaded||[]),id])]};
 }
-/** The site-wide GTM container (owner's decision, 20 Nov: Google runs only through it). Its dataLayer and gtm.start
- * are set inline in <head> (root.tsx GTM_INIT), so nothing is missed; only gtm.js waits for the third-party gate.
- * Loaded directly in <head> it kept a slow phone busy for 6-11 s after a menu tap (measured 23 Nov). It loads
- * regardless of consent, exactly like the former <head> snippet, and shares the legacy loader's element id so the
- * container can never load twice. */
-export const SITE_GTM_ID='GTM-56L6HTJ9';
-export function siteGtmURL(id=SITE_GTM_ID){return 'https://www.googletagmanager.com/gtm.js?id='+encodeURIComponent(id);}
-export function loadSiteGtm(id=SITE_GTM_ID){if(typeof document==='undefined')return;script('equator-gtm',siteGtmURL(id));}
 /** Every configured Google ID can load gtag.js; GA4 first, then Google tags, then Google Ads. Duplicates removed. */
 export function googleTagSources(next:Pick<TrackingConfig,'googleAnalyticsIds'|'googleTagIds'|'googleAdsIds'>){
  return [...new Set([...next.googleAnalyticsIds,...next.googleTagIds,...next.googleAdsIds].map(id=>id.trim()).filter(id=>/^(G|GT|AW)-[A-Z0-9]+$/i.test(id)))].map(id=>'https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(id));

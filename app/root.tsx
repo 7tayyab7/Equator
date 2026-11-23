@@ -9,7 +9,6 @@ import {HomepageHeroPreload} from './components/HomepageHeroPreload';
 import trackingSettings from './content/tracking.json';
 import {trackingEnabled} from './lib/tracking';
 import {TrackingHead,TrackingEvents} from './components/Tracking';
-import {loadSiteGtm} from './lib/tracking.client';
 import {SeoHead} from './components/SeoHead';
 import seoSite from './content/seo-site.json';
 import {indexingEnabled} from './lib/seo';
@@ -36,13 +35,13 @@ export async function loader({context,request}:Route.LoaderArgs) {const env=cont
 export function shouldRevalidate({currentUrl,nextUrl,formMethod,defaultShouldRevalidate}:ShouldRevalidateFunctionArgs){if(formMethod&&formMethod.toUpperCase()!=='GET')return defaultShouldRevalidate;if(currentUrl.pathname!==nextUrl.pathname)return nextUrl.pathname==='/';if(currentUrl.search!==nextUrl.search)return false;return defaultShouldRevalidate;}
 
 export function Layout({children}: {children: ReactNode}) {
-  return <html lang="en"><head><meta charSet="utf-8"/>{/* Google Tag Manager GTM-56L6HTJ9: dataLayer and gtm.start start here; gtm.js itself loads through the third-party gate (loadSiteGtm in App), so it never delays the first taps. */}<script id="equator-gtm-init" dangerouslySetInnerHTML={{__html:GTM_INIT}}/><script id="equator-early-add" dangerouslySetInnerHTML={{__html:EARLY_ADD_SCRIPT}}/><script id="equator-early-menu" dangerouslySetInnerHTML={{__html:EARLY_MENU_SCRIPT}}/><script id="equator-startup-recovery" dangerouslySetInnerHTML={{__html:'('+installStartupRecovery.toString()+')(window);'}}/><meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="preconnect" href="https://cdn.shopify.com"/><HomepageHeroPreload/><link rel="icon" href="/favicon.ico?v=20261120" sizes="16x16 32x32 48x48"/><link rel="icon" type="image/png" sizes="48x48" href="/images/equator-icon-20261120-48.png?v=20261120"/><link rel="icon" type="image/png" sizes="96x96" href="/images/equator-icon-20261120-96.png?v=20261120"/><link rel="icon" type="image/png" sizes="192x192" href="/images/equator-icon-20261120-192.png?v=20261120"/><link rel="apple-touch-icon" sizes="180x180" href="/images/equator-apple-touch-icon-20261120.png?v=20261120"/><Meta/><SeoHead/><TrackingHead/><Links/></head><body>{children}<ScrollRestoration/><Scripts/></body></html>;
+  return <html lang="en"><head><meta charSet="utf-8"/>{/* Google Tag Manager GTM-56L6HTJ9: the snippet from GTM's install screen, directly in <head> so Tag Assistant and GTM detect it. */}<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-56L6HTJ9"/><script id="equator-gtm-init" dangerouslySetInnerHTML={{__html:GTM_INIT}}/><script id="equator-early-add" dangerouslySetInnerHTML={{__html:EARLY_ADD_SCRIPT}}/><script id="equator-early-menu" dangerouslySetInnerHTML={{__html:EARLY_MENU_SCRIPT}}/><script id="equator-startup-recovery" dangerouslySetInnerHTML={{__html:'('+installStartupRecovery.toString()+')(window);'}}/><meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="preconnect" href="https://cdn.shopify.com"/><HomepageHeroPreload/><link rel="icon" href="/favicon.ico?v=20261120" sizes="16x16 32x32 48x48"/><link rel="icon" type="image/png" sizes="48x48" href="/images/equator-icon-20261120-48.png?v=20261120"/><link rel="icon" type="image/png" sizes="96x96" href="/images/equator-icon-20261120-96.png?v=20261120"/><link rel="icon" type="image/png" sizes="192x192" href="/images/equator-icon-20261120-192.png?v=20261120"/><link rel="apple-touch-icon" sizes="180x180" href="/images/equator-apple-touch-icon-20261120.png?v=20261120"/><Meta/><SeoHead/><TrackingHead/><Links/></head><body>{children}<ScrollRestoration/><Scripts/></body></html>;
 }
 
 export default function App() {
   const loaded = useLoaderData<typeof loader>();
   const [navigation,setNavigation]=useState({menu:loaded.settings.menu,collectionGroups:loaded.settings.collectionGroups});
-  useEffect(()=>{markHydrated();preloadRouteModules();loadSiteGtm();},[]);
+  useEffect(()=>{markHydrated();preloadRouteModules();},[]);
   const routeNavigation=useNavigation();
   useEffect(()=>{(window as Window&{__equatorNavigating?:boolean}).__equatorNavigating=routeNavigation.state!=='idle';},[routeNavigation.state]);
   useEffect(()=>{let active=true;void loaded.navigationPending.then(value=>{if(active)setNavigation(value);});return()=>{active=false;};},[loaded.navigationPending]);
