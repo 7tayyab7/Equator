@@ -160,7 +160,7 @@ export function StoreLayout({settings, children,hostedStoreOrigin}: {settings: S
     <Footer hostedStoreOrigin={hostedStoreOrigin} settings={settings} onCookies={()=>openPanel('cookies')}/>
     <WhatsAppSupport href={settings.contact.whatsapp}/>
     <p className="sr-only" role="status">{cookieMessage}</p>
-    <dialog ref={dialog} className={`store-dialog panel-${panel ?? 'closed'}`} aria-labelledby="panel-title" onClickCapture={event=>{if((event.target as Element).closest("a[href]"))setPanel(null);}}
+    <dialog ref={dialog} className={`store-dialog panel-${panel ?? 'closed'}`} aria-labelledby="panel-title" onClickCapture={event=>{const link=(event.target as Element).closest("a[href]");if(link&&!link.hasAttribute('data-keep-panel'))setPanel(null);}}
       onCancel={() => setPanel(null)} onClose={() => setPanel(null)}
       onClick={event => {if (event.target === event.currentTarget) {
         const box = event.currentTarget.getBoundingClientRect();

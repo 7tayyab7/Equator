@@ -1324,3 +1324,6 @@ html:has(dialog:modal),body:has(dialog:modal){overflow:hidden;}
 .navigation-progress{position:fixed;top:0;left:0;right:0;z-index:150;height:3px;background:#111;pointer-events:none;}
 /* Add to bag tapped before the page finished starting: shown as working until the add runs. */
 html.equator-early-add [data-add-to-bag]{opacity:.65;pointer-events:none;}
+
+/* Checkout in the bag: stays visible and shows progress while Shopify checkout opens. */
+.bag-checkout[aria-busy="true"] { opacity:.75; cursor:progress; pointer-events:none; }
