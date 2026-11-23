@@ -1,3 +1,4 @@
+import {isValidHandle} from './handle.ts';
 export type Money={amount:string;currencyCode:string};
 export type Variant={id:string;title:string;sku:string;availableForSale:boolean;selectedOptions:{name:string;value:string}[];price:Money;compareAtPrice:Money|null;image:{url:string;altText:string|null;width:number;height:number}|null};
 
@@ -58,7 +59,7 @@ export function colorLabel(description:string,title:string) {
 // Match the live theme: remove a final segment shorter than three characters,
 // then check the base handle and its numbered color siblings (1–20).
 export function colorProductHandles(handle:string):string[] {
- if(!/^[a-z0-9-]{1,255}$/.test(handle))return [];
+ if(!isValidHandle(handle))return [];
  const parts=handle.split('-');
  if(parts.at(-1)!.length<3)parts.pop();
  const base=parts.join('-');

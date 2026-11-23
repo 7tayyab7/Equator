@@ -1,3 +1,4 @@
+import {isValidHandle} from './handle.ts';
 import {getCollectionDefaultSort} from './collection-default.server';
 import {nextPageCursor} from './pagination';
 import {fastCollectionFirstPage,collectionPageSort} from './collection-first-page';
@@ -20,7 +21,7 @@ async function loadFirstPage(env:Record<string,string>,handle:string,sort:string
  return {metadata,products:products.nodes.map(toCard),hasNextPage:products.pageInfo.hasNextPage};
 }
 export async function getCollectionFilters(env:Record<string,string>,handle:string,signal:AbortSignal){
- if(!/^[a-z0-9-]{1,255}$/.test(handle))throw new Response('Collection not found',{status:404});
+ if(!isValidHandle(handle))throw new Response('Collection not found',{status:404});
  const {products,filters}=await loadCatalog(env,handle,signal);
  const baseline=collectionFacets(products,{selected:[],min:'',max:'',sort:'collection-default'},filters);
  return visibleCollectionFacets(baseline,baseline,[]);
@@ -68,7 +69,7 @@ async function collectionRank(env:Record<string,string>,handle:string,signal:Abo
  return new Map(ids.map((id,index)=>[id,index]));
 }
 export async function getCollection(env:Record<string,string>,handle:string,url:URL,signal:AbortSignal){
- if(!/^[a-z0-9-]{1,255}$/.test(handle))throw new Response('Collection not found',{status:404});
+ if(!isValidHandle(handle))throw new Response('Collection not found',{status:404});
  if(fastCollectionFirstPage(url.searchParams,handle)){
   const defaultSort='collection-default',state=parseCollectionState(url.searchParams,[],defaultSort),key=`${env.PUBLIC_STORE_DOMAIN}:${handle}:${state.sort}`,hit=firstPages.get(key);
   const page=hit&&hit.expires>Date.now()?hit.value:await loadFirstPage(env,handle,state.sort,signal);

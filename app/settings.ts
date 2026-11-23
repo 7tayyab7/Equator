@@ -11,8 +11,6 @@ export const settings = {
   typography: {navigation: '"Helvetica Neue", Helvetica, Arial, sans-serif', body: '"Helvetica Neue", Helvetica, Arial, sans-serif', heading: '"Helvetica Neue", Helvetica, Arial, sans-serif'},
   motion: {duration: 350, easing: 'cubic-bezier(0.33, 1, 0.68, 1)'},
   header: {height: 80, transparent: true, primaryMenuCount:6},
-  homepageSections: {categories:false,bestSellers:false},
-  productGrid: {heading: 'Quick View', collection: 'best-selling', limit: 8},
   newsletter: {heading: 'Join Our Newsletter', placeholder: 'Your email address', description: 'Promotions, new products, and sales, directly to your inbox.'},
   contact: {email: 'customer@equatorstores.com', phone:'+924235454780', phoneLabel:'042-35454780', mobiles:[{number:'+923351623167',label:'+92-335-1623167'},{number:'+923334919028',label:'+92-333-4919028'}], address:'23 KM, Ferozepur Road, Gajjumatta, Lahore.', whatsapp:'https://wa.me/923334919028'},
   storeLocation: {heading: 'Store Locations', href: '/pages/store-locations', mapUrl: 'https://www.google.com/maps?q=Equator%20Mall%2096%20MM%20Alam%20Road%20Lahore&output=embed', caption: 'Explore our stores across Pakistan'},

@@ -22,4 +22,4 @@ export default function Search(){
  <CollectionFilters open={open} initialTab={tab} filters={filters} state={state} onClose={()=>setOpen(false)} currency={products[0]?.currency||'PKR'} onApply={draft=>{const next=collectionSearch(draft,'featured');next.set('q',q);setSearch(next);}} hideBestSelling/>
  </section>;
 }
-export const ErrorBoundary=ContentError;
+export {PageError as ErrorBoundary} from '../components/PageError';

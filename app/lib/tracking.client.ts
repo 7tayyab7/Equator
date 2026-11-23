@@ -1,7 +1,8 @@
 import {advertisingItemID,cartEvents,catalogID,consentKey,emptyConsent,eventValue,googleConsent,normalizedConsent,safeTrackingURL,type TrackingConfig,type TrackingConsent,type TrackingEvent,type TrackingItem} from './tracking.ts';
+import {browserGateEnvironment,createThirdPartyGate,type ThirdPartyGate} from './third-party-gate.ts';
 type Privacy={consentStatus?:string;analyticsProcessingAllowed:()=>boolean;marketingAllowed:()=>boolean;saleOfDataAllowed?:()=>boolean;currentVisitorConsent?:()=>Record<string,string>;setTrackingConsent:(value:Record<string,boolean>)=>Promise<unknown>};
 type Tag=((...args:any[])=>void)&{queue?:unknown[];loaded?:boolean;version?:string;callMethod?:(...args:any[])=>void;handleRequest?:(...args:any[])=>void;push?:Tag};
-type TrackingWindow=Window&{Shopify?:{customerPrivacy?:Privacy;analytics?:{publish:(...args:any[])=>void}};dataLayer?:unknown[];gtag?:Tag;fbq?:Tag;_fbq?:Tag;snaptr?:Tag;ttq?:any;TiktokAnalyticsObject?:string;__equatorTracking?:{mode:'live'|'dry-run';events:TrackingEvent[]};};
+type TrackingWindow=Window&{Shopify?:{customerPrivacy?:Privacy;analytics?:{publish:(...args:any[])=>void}};dataLayer?:unknown[];gtag?:Tag;fbq?:Tag;_fbq?:Tag;snaptr?:Tag;ttq?:any;TiktokAnalyticsObject?:string;__equatorTracking?:{mode:'live'|'dry-run';events:TrackingEvent[];vendorScripts?:{openedAt?:number;reason?:string;loaded:string[];retries?:Record<string,number>;fallbacks?:Record<string,number>;sources?:Record<string,string>}};};
 let config:TrackingConfig|undefined,choice=emptyConsent,choiceKnown=false,googleStarted=false,metaStarted=false,tiktokStarted=false,snapStarted=false,gtmStarted=false;
 let currentPage:TrackingEvent|undefined,currentResource:TrackingEvent|undefined;
 let consentRevision=0,syncedRevision=-1,syncingConsent:Promise<void>|undefined;
@@ -12,7 +13,45 @@ export function hasConsentChoice(){if(choiceKnown)return true;try{return Boolean
 function hasNativeChoice(cp:Privacy){try{const value=cp.currentVisitorConsent?.().analytics;return value==='yes'||value==='no';}catch{return false;}}
 export function consentBannerNeeded(){if(typeof window==='undefined'||hasConsentChoice())return false;const cp=win().Shopify?.customerPrivacy;if(cp?.consentStatus!=='loaded')return true;try{return !hasNativeChoice(cp)&&!cp.analyticsProcessingAllowed();}catch{return true;}}
 export function activeTrackingConsent(){if(!config?.enabled)return choice;const cp=win().Shopify?.customerPrivacy;if(cp?.consentStatus!=='loaded'||syncedRevision!==consentRevision)return emptyConsent;try{return {analytics:(!choiceKnown||choice.analytics)&&cp.analyticsProcessingAllowed(),marketing:(!choiceKnown||choice.marketing)&&!gpc()&&cp.marketingAllowed(),sharing:(!choiceKnown||choice.sharing)&&!gpc()&&(cp.saleOfDataAllowed?.()??false)};}catch{return emptyConsent;}}
-function script(id:string,src:string){if(document.getElementById(id))return;const tag=document.createElement('script');tag.id=id;tag.async=true;tag.src=src;document.head.appendChild(tag);}
+// Vendor scripts wait for the third-party gate (see third-party-gate.ts); their queues keep every event meanwhile.
+let vendorGate:ThirdPartyGate|undefined;const pendingScripts=new Set<string>();
+const thirdParty=()=>vendorGate??=createThirdPartyGate(browserGateEnvironment());
+/** `src` may be a list of alternative URLs (e.g. the Google tag under different IDs); they are tried in order. */
+function script(id:string,src:string|string[]){
+ const candidates=(Array.isArray(src)?src:[src]).filter(Boolean);
+ if(!candidates.length||document.getElementById(id)||pendingScripts.has(id))return;pendingScripts.add(id);
+ const gate=thirdParty();
+ gate.run(()=>insertVendorScript(id,candidates,gate,0,0));
+}
+/** Weak or dropping connections: when every candidate URL of a vendor script fails, the whole list is retried
+ * after 3 s, 10 s and 30 s. A rejected candidate (e.g. a Google ID that returns 404) moves straight on to the
+ * next one. Each vendor queue (fbq/ttq/snaptr/dataLayer) keeps every event meanwhile, so they are delivered
+ * once the script loads. Nothing here can block or break the page: scripts are async and failures are swallowed. */
+export const VENDOR_RETRY_DELAYS_MS=[3000,10000,30000];
+function insertVendorScript(id:string,candidates:string[],gate:ThirdPartyGate,attempt:number,index:number){
+ pendingScripts.delete(id);if(document.getElementById(id))return;
+ const src=candidates[index];
+ const tag=document.createElement('script');tag.id=id;tag.async=true;(tag as HTMLScriptElement&{fetchPriority?:string}).fetchPriority='low';tag.src=src;
+ tag.onerror=()=>{
+  (tag as HTMLScriptElement&{remove?:()=>void}).remove?.();
+  const log=win().__equatorTracking?.vendorScripts;
+  if(index+1<candidates.length){
+   if(log)log.fallbacks={...log.fallbacks,[id]:(log.fallbacks?.[id]||0)+1};
+   insertVendorScript(id,candidates,gate,attempt,index+1);return;
+  }
+  if(log)log.retries={...log.retries,[id]:attempt+1};
+  const delay=VENDOR_RETRY_DELAYS_MS[attempt];
+  if(delay===undefined)return;// Give up quietly after the last retry; shopping is never affected.
+  pendingScripts.add(id);setTimeout(()=>insertVendorScript(id,candidates,gate,attempt+1,0),delay);
+ };
+ tag.onload=()=>{const log=win().__equatorTracking?.vendorScripts;if(log)log.sources={...log.sources,[id]:src};};
+ document.head.appendChild(tag);
+ const log=win().__equatorTracking;if(log)log.vendorScripts={...log.vendorScripts,openedAt:gate.openedAt(),reason:gate.reason(),loaded:[...new Set([...(log.vendorScripts?.loaded||[]),id])]};
+}
+/** Every configured Google ID can load gtag.js; GA4 first, then Google tags, then Google Ads. Duplicates removed. */
+export function googleTagSources(next:Pick<TrackingConfig,'googleAnalyticsIds'|'googleTagIds'|'googleAdsIds'>){
+ return [...new Set([...next.googleAnalyticsIds,...next.googleTagIds,...next.googleAdsIds].map(id=>id.trim()).filter(id=>/^(G|GT|AW)-[A-Z0-9]+$/i.test(id)))].map(id=>'https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(id));
+}
 function google(){const w=win();w.dataLayer??=[];w.gtag??=function(){w.dataLayer!.push(arguments);};return w.gtag;}
 function applyGoogleConsent(){google()('consent','update',googleConsent(activeTrackingConsent()));}
 function publishConsent(){
@@ -51,11 +90,11 @@ const delivered=new Set<string>();
 
 export function recordTracking(event:TrackingEvent){if(!config||typeof window==='undefined')return;const safe={...event,event_id:event.event_id||crypto.randomUUID()};if(event.name==='page_view'){currentPage=safe;currentResource=undefined;}else if(['view_item','view_item_list','search'].includes(event.name))currentResource=safe;const log=win().__equatorTracking?.events;if(log){log.push(safe);if(log.length>60)log.shift();}try{send(safe);}catch{/* Telemetry must never interrupt shopping. */}}
 function once(destination:string,event:TrackingEvent,action:()=>void){const key=destination+':'+event.event_id;if(delivered.has(key))return;action();delivered.add(key);if(delivered.size>1200)delivered.delete(delivered.values().next().value!);}
-function startGoogle(consent:TrackingConsent){const tag=google();if(!googleStarted){googleStarted=true;tag('js',new Date());script('equator-google-tag','https://www.googletagmanager.com/gtag/js?id='+config!.googleAnalyticsIds[0]);}applyGoogleConsent();if(consent.analytics)for(const id of config!.googleAnalyticsIds)once('config-'+id,{name:'page_view',event_id:'config'},()=>tag('config',id,{send_page_view:false}));if(consent.marketing&&consent.sharing)for(const id of [...config!.googleAdsIds,...config!.googleTagIds])once('config-'+id,{name:'page_view',event_id:'config'},()=>tag('config',id,{send_page_view:false}));}
+function startGoogle(consent:TrackingConsent){const tag=google();if(!googleStarted){googleStarted=true;const sources=googleTagSources(config!);if(sources.length){tag('js',new Date());script('equator-google-tag',sources);}}applyGoogleConsent();if(consent.analytics)for(const id of config!.googleAnalyticsIds)once('config-'+id,{name:'page_view',event_id:'config'},()=>tag('config',id,{send_page_view:false}));if(consent.marketing&&consent.sharing)for(const id of [...config!.googleAdsIds,...config!.googleTagIds])once('config-'+id,{name:'page_view',event_id:'config'},()=>tag('config',id,{send_page_view:false}));}
 function startMeta(){if(metaStarted)return;metaStarted=true;const w=win();const fb:Tag=function(...args:any[]){fb.callMethod?fb.callMethod(...args):fb.queue!.push(args);};fb.queue=[];fb.push=fb;fb.loaded=true;fb.version='2.0';w.fbq=fb;w._fbq=fb;fb('consent','grant');fb('set','autoConfig',false,config!.metaPixelId);fb('init',config!.metaPixelId);script('equator-meta-pixel','https://connect.facebook.net/en_US/fbevents.js');}
 function startTikTok(){if(tiktokStarted)return;tiktokStarted=true;const w=win(),ttq:any=[];w.TiktokAnalyticsObject='ttq';ttq.methods=['page','track','identify','instances','debug','on','off','once','ready','alias','group','enableCookie','disableCookie','holdConsent','revokeConsent','grantConsent'];for(const name of ttq.methods)ttq[name]=(...args:any[])=>ttq.push([name,...args]);ttq._i={[config!.tiktokPixelId]:[]};ttq.instance=(id:string)=>{const instance=ttq._i[id]||[];for(const name of ttq.methods)instance[name]=(...args:any[])=>instance.push([name,...args]);return instance;};ttq._i[config!.tiktokPixelId]._u='https://analytics.tiktok.com/i18n/pixel/events.js';ttq._t={[config!.tiktokPixelId]:Date.now()};ttq._o={[config!.tiktokPixelId]:{}};w.ttq=ttq;script('equator-tiktok-pixel','https://analytics.tiktok.com/i18n/pixel/events.js?sdkid='+config!.tiktokPixelId+'&lib=ttq');}
 function startSnap(){if(snapStarted)return;snapStarted=true;const w=win(),snap:Tag=function(...args:any[]){snap.handleRequest?snap.handleRequest(...args):snap.queue!.push(args);};snap.queue=[];w.snaptr=snap;snap('init',config!.snapPixelId,{});script('equator-snap-pixel','https://sc-static.net/scevent.min.js');}
-function send(event:TrackingEvent){if(!config?.enabled||(event.name==='view_item_list'&&!event.items?.length))return;const consent=activeTrackingConsent(),{name,event_id,items=[],...params}=event;const ad=consent.marketing&&consent.sharing;if(consent.analytics||ad){startGoogle(consent);const googleItems=items.map(({product_id,variant_id,...item})=>item);if(consent.analytics)once('ga',event,()=>google()('event',name,{...params,items:googleItems,send_to:config!.googleAnalyticsIds,transport_type:'beacon'}));if(ad){const targets=config.googleEventLabels[name]||[];if(targets.length)once('ads',event,()=>google()('event',name,{...params,items:googleItems,send_to:targets,transport_type:'beacon'}));}}
+function send(event:TrackingEvent){if(!config?.enabled||(event.name==='view_item_list'&&!event.items?.length))return;const consent=activeTrackingConsent(),{name,event_id,items=[],...params}=event;const ad=consent.marketing&&consent.sharing;if(consent.analytics||ad){startGoogle(consent);const googleItems=items.map(({product_id,variant_id,...item})=>item);if(consent.analytics&&config.googleAnalyticsIds.length)once('ga',event,()=>google()('event',name,{...params,items:googleItems,send_to:config!.googleAnalyticsIds,transport_type:'beacon'}));if(ad){const targets=config.googleEventLabels[name]||[];if(targets.length)once('ads',event,()=>google()('event',name,{...params,items:googleItems,send_to:targets,transport_type:'beacon'}));}}
  if(!ad)return;
  if(config.gtmEnabled&&!gtmStarted){gtmStarted=true;win().dataLayer!.push({'gtm.start':Date.now(),event:'gtm.js'});script('equator-gtm','https://www.googletagmanager.com/gtm.js?id='+config.gtmId);}
  // A separate event name avoids firing an existing container's ecommerce tags twice.

@@ -26,6 +26,7 @@ export default function CollectionPage() {
  const filters=filtersDeferred&&facetData?.filters?facetData.filters:initialFilters;
  const [open,setOpen]=useState(false),[filterTab,setFilterTab]=useState<'filter'|'sort'>('filter');const [query,setSearch]=useSearchParams();const navigation=useNavigation();
  const busy=navigation.state!=='idle';
+ useEffect(()=>{if(busy)setOpen(false);},[busy,collection.handle]);
  const filtersError=filtersDeferred&&facetData&&'error' in facetData?facetData.error:'';
  const filtersLoading=filtersDeferred&&!(facetData&&'filters' in facetData)&&!filtersError;
  const loadFilters=()=>void facets.load(`/resources/collection-filters?handle=${encodeURIComponent(collection.handle)}`);
@@ -56,8 +57,4 @@ export default function CollectionPage() {
   <CollectionFilters defaultSort={defaultSort} initialTab={filterTab} open={open} onClose={()=>setOpen(false)} filters={filters} loading={filtersLoading} error={filtersError} onRetry={loadFilters} state={state} currency={products[0]?.currency||'PKR'} onApply={draft=>setSearch(searchFor(draft))}/>
  </section>;
 }
-export function ErrorBoundary() {
- const error=useRouteError();const missing=isRouteErrorResponse(error)&&error.status===404;
- return <section className="collection-page collection-error"><h1>{missing?'Collection not found':'Collection unavailable'}</h1><p>{missing?'This collection could not be found. Explore another Equator collection below.':'We could not load the current products. Please try again.'}</p><a href="">Try again</a><Link to="/collections/new-arrivals">Shop new arrivals</Link></section>;
-}
-
+export {PageError as ErrorBoundary} from '../components/PageError';

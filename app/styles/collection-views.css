@@ -1,6 +1,4 @@
-.collection-page .collection-toolbar-reference .collection-toolbar-actions{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:16px;align-items:center}
 .collection-page .collection-toolbar-actions>button{justify-self:start}
-.collection-page .collection-sort-select{justify-self:end;max-width:100%}
 .collection-page .collection-grid{grid-template-columns:repeat(var(--collection-desktop-columns,4),minmax(0,1fr))}
 .collection-view-desktop{display:flex;justify-content:center;gap:8px}
 .collection-view-mobile{display:none}
@@ -9,10 +7,6 @@
 .collection-page .collection-view-options button:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .collection-view-options svg{display:block;width:24px;height:24px}
 @media(max-width:767px){
- .collection-page .collection-toolbar-reference .collection-toolbar-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
- .collection-page .collection-toolbar-reference .collection-toolbar-actions>button{padding-inline:8px;gap:5px;font-size:12px}
- .collection-page .collection-sort-select select{padding-left:8px;padding-right:23px;font-size:12px}
- .collection-page .collection-sort-select>svg{right:7px;width:12px}
  .collection-view-desktop{display:none}
  .collection-view-mobile{display:flex;justify-content:center;gap:2px}
  .collection-page .collection-view-options button{width:32px;min-width:32px;height:33px;min-height:33px;padding:4px}

@@ -9,7 +9,7 @@ function FilterGroup({title,children}:{title:string;children:ReactNode}) {
  </section>;
 }
 export function CollectionFilters({open,onClose,filters,state,currency,onApply,initialTab='filter',hideBestSelling=false,defaultSort='featured',loading=false,error='',onRetry}:{loading?:boolean;error?:string;onRetry?:()=>void;defaultSort?:string;initialTab?:'filter'|'sort';hideBestSelling?:boolean;open:boolean;onClose:()=>void;filters:CollectionFilter[];state:CollectionState;currency:string;onApply:(state:CollectionState)=>void}) {
- const dialog=useRef<HTMLDialogElement>(null),closeTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+ const dialog=useRef<HTMLDialogElement>(null);
  const [visible,setVisible]=useState(false),[tab,setTab]=useState<'filter'|'sort'>('filter');
  const [draft,setDraft]=useState(state);
  const filterTab=useRef<HTMLButtonElement>(null),sortTab=useRef<HTMLButtonElement>(null);
@@ -18,17 +18,16 @@ export function CollectionFilters({open,onClose,filters,state,currency,onApply,i
   if(!open)return;
   setDraft({...state,selected:[...state.selected]});setTab(initialTab);
   const previous=document.activeElement as HTMLElement|null;
-  const overflow=document.body.style.overflow;
-  dialog.current?.showModal();document.body.style.overflow='hidden';
+    dialog.current?.showModal();
   const frame=requestAnimationFrame(()=>setVisible(true));
-  return()=>{cancelAnimationFrame(frame);if(closeTimer.current)clearTimeout(closeTimer.current);dialog.current?.close();document.body.style.overflow=overflow;previous?.focus();};
+  return()=>{cancelAnimationFrame(frame);dialog.current?.close();previous?.focus();};
  },[open,initialTab]);
- function close() {setVisible(false);closeTimer.current=setTimeout(onClose,window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:300);}
+ function close(){setVisible(false);dialog.current?.close();onClose();}
  const bounds=priceBounds(filters);
  const invalid=(draft.min!==''&&(!Number.isFinite(Number(draft.min))||Number(draft.min)<0))||(draft.max!==''&&(!Number.isFinite(Number(draft.max))||Number(draft.max)<0))||(draft.min!==''&&draft.max!==''&&Number(draft.min)>Number(draft.max));
  function select(id:string){setDraft(d=>({...d,selected:d.selected.includes(id)?d.selected.filter(v=>v!==id):[...d.selected,id]}));}
  function switchTab(value:'filter'|'sort'){setTab(value);}
- return <dialog ref={dialog} className="collection-filter-dialog" aria-labelledby="collection-filter-heading" data-open={visible} onCancel={event=>{event.preventDefault();close();}} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right)close();}}}>
+ return <dialog ref={dialog} className="collection-filter-dialog" aria-labelledby="collection-filter-heading" data-open={visible} onClose={onClose} onCancel={event=>{event.preventDefault();close();}} onClick={event=>{if(event.target===event.currentTarget){const r=event.currentTarget.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right)close();}}}>
   <h2 className="sr-only" id="collection-filter-heading">Filter & Sort</h2>
   <div className="collection-drawer-heading">
    <div role="tablist" aria-label="Filter and sort options" onKeyDown={event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const next=event.key==='Home'?'filter':event.key==='End'?'sort':tab==='filter'?'sort':'filter';setTab(next);(next==='filter'?filterTab:sortTab).current?.focus();}}}>

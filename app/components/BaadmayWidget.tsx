@@ -1,13 +1,14 @@
 import {useEffect,useId,useRef,useState} from 'react';
+import {loadJSON} from '../lib/json-request.client';
 import {baadmayInstallment,type BaadmayConfig} from '../lib/baadmay';
 import type {Money} from '../lib/product-helpers';
 let configRequest:Promise<BaadmayConfig|null>|null=null,expires=0;
-function getConfig(){if(!configRequest||Date.now()>expires){expires=Date.now()+300000;configRequest=fetch('/resources/baadmay').then(async response=>response.ok?(await response.json() as {config:BaadmayConfig|null}).config:null).catch(()=>null).then(value=>{if(!value)expires=Date.now()+15000;return value;});}return configRequest;}
+function getConfig(){if(!configRequest||Date.now()>expires){expires=Date.now()+300000;configRequest=loadJSON<{config:BaadmayConfig|null}>('/resources/baadmay',{},8000).then(data=>data.config).catch(()=>null).then(value=>{if(!value)expires=Date.now()+15000;return value;});}return configRequest;}
 const rupees=(amount:number)=>`Rs. ${new Intl.NumberFormat('en-PK',{maximumFractionDigits:0}).format(amount)}`;
 export function BaadmayWidget({price}:{price:Money}){
  const [config,setConfig]=useState<BaadmayConfig|null>(null),[open,setOpen]=useState(false),dialog=useRef<HTMLDialogElement>(null),id=useId(),title=useId();
  useEffect(()=>{let active=true;void getConfig().then(value=>{if(active)setConfig(value);});return()=>{active=false;};},[]);
- useEffect(()=>{if(!open)return;const previous=document.activeElement as HTMLElement|null,overflow=document.body.style.overflow;dialog.current?.showModal();document.body.style.overflow='hidden';return()=>{dialog.current?.close();document.body.style.overflow=overflow;if(previous?.isConnected)previous.focus();};},[open]);
+ useEffect(()=>{if(!open)return;const previous=document.activeElement as HTMLElement|null;dialog.current?.showModal();return()=>{dialog.current?.close();if(previous?.isConnected)previous.focus();};},[open]);
  const installment=baadmayInstallment(Number(price.amount),price.currencyCode,config);
  if(price.currencyCode!=='PKR')return null;
  return <div className="pdp-baadmay">

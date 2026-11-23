@@ -1,9 +1,10 @@
-import {useEffect,useState} from 'react';
+import {loadJSON} from '../lib/json-request.client';
+import {useEffect,useRef,useState} from 'react';
 import {WriteProductReview} from './WriteProductReview';
 export type ReviewData={count:number;rating:number;page:number;pages:number;reviews:{id:string;title:string;rating:number;body:string;name:string;verified:boolean;date:string}[]};
-export function useProductReviews(id:string){
- const [data,setData]=useState<ReviewData|null>(null),[page,setPage]=useState(1),[error,setError]=useState(''),[busy,setBusy]=useState(true);
- useEffect(()=>{const controller=new AbortController();setBusy(true);setError('');fetch(`/resources/product-reviews?${new URLSearchParams({id,page:String(page)})}`,{signal:controller.signal}).then(async response=>{if(!response.ok)throw new Error('Customer reviews are temporarily unavailable.');return response.json() as Promise<ReviewData>;}).then(setData).catch(e=>{if(!controller.signal.aborted)setError(e.message);}).finally(()=>{if(!controller.signal.aborted)setBusy(false);});return()=>controller.abort();},[id,page]);
+export function useProductReviews(id:string,initial:ReviewData|null=null){
+ const [data,setData]=useState<ReviewData|null>(initial),[page,setPage]=useState(initial?.page||1),[error,setError]=useState(''),[busy,setBusy]=useState(!initial),usedInitial=useRef(false);
+ useEffect(()=>{if(!usedInitial.current){usedInitial.current=true;if(initial){setBusy(false);return;}}const controller=new AbortController();setBusy(true);setError('');loadJSON<ReviewData>(`/resources/product-reviews?${new URLSearchParams({id,page:String(page)})}`,{signal:controller.signal}).then(setData).catch(e=>{if(!controller.signal.aborted)setError(e.message);}).finally(()=>{if(!controller.signal.aborted)setBusy(false);});return()=>controller.abort();},[id,page]);
  return {data,page,setPage,busy,error};
 }
 export function ProductReviews({state,productId,productTitle}:{state:ReturnType<typeof useProductReviews>;productId:string;productTitle:string}){

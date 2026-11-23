@@ -15,3 +15,5 @@ export async function requestJSON<T>(url:string,options:RequestInit={},timeoutMs
     ]);
   }finally{if(timer!==undefined)clearTimeout(timer);source?.removeEventListener('abort',abort);}
 }
+
+export async function loadJSON<T>(url:string,options:RequestInit={},timeoutMs=15000):Promise<T>{const {response,data}=await requestJSON<T&{error?:string}>(url,options,timeoutMs);if(!response.ok)throw Error(data.error||'This request could not be completed. Please try again.');return data;}

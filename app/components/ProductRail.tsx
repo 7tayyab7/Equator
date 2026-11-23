@@ -1,3 +1,4 @@
+import {loadJSON} from '../lib/json-request.client';
 import {ArrowIcon} from './ArrowIcon';
 import {useEffect,useRef,useState,useId} from 'react';
 import {ProductCard} from './ProductCard';
@@ -12,6 +13,6 @@ export function ProductRail({title,products,sectionId}:{title:string;products:Pr
 }
 export function RecentlyViewed({current}:{current:string}){
  const [products,setProducts]=useState<ProductCardData[]>([]);
- useEffect(()=>{const controller=new AbortController();setProducts([]);try{let saved:unknown=[];try{saved=JSON.parse(localStorage.getItem('equator-recent-products')||'[]');}catch{/* Recover an invalid history without losing the current view. */}const history=updateHistory(saved,current);localStorage.setItem('equator-recent-products',JSON.stringify(history));const previous=history.filter(id=>id!==current);if(previous.length)fetch(`/resources/recent-products?ids=${encodeURIComponent(previous.join(','))}`,{signal:controller.signal}).then(r=>r.ok?r.json() as Promise<{products:ProductCardData[]}>:{products:[]}).then(data=>setProducts(data.products)).catch(()=>{});}catch{/* Storage is optional; private browsers can deny access. */}return()=>controller.abort();},[current]);
+ useEffect(()=>{const controller=new AbortController();setProducts([]);try{let saved:unknown=[];try{saved=JSON.parse(localStorage.getItem('equator-recent-products')||'[]');}catch{/* Recover an invalid history without losing the current view. */}const history=updateHistory(saved,current);localStorage.setItem('equator-recent-products',JSON.stringify(history));const previous=history.filter(id=>id!==current);if(previous.length)loadJSON<{products:ProductCardData[]}>(`/resources/recent-products?ids=${encodeURIComponent(previous.join(','))}`,{signal:controller.signal}).then(data=>{if(!controller.signal.aborted)setProducts(data.products);}).catch(()=>{});}catch{/* Storage is optional; private browsers can deny access. */}return()=>controller.abort();},[current]);
  return <ProductRail title="Recently Viewed" products={products}/>;
 }

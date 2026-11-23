@@ -1,3 +1,8 @@
+import {EARLY_ADD_SCRIPT,markHydrated} from './lib/early-add';
+import {preloadRouteModules} from './lib/route-preload.client';
+import {installStartupRecovery} from './lib/startup-recovery';
+import {isHomepageRequest} from './lib/homepage-request';
+import {NavigationRecovery} from './components/NavigationRecovery';
 import {hostedStoreOrigin} from './lib/hosted-store';
 import {HomepageHeroPreload} from './components/HomepageHeroPreload';
 import trackingSettings from './content/tracking.json';
@@ -6,11 +11,11 @@ import {TrackingHead,TrackingEvents} from './components/Tracking';
 import {SeoHead} from './components/SeoHead';
 import seoSite from './content/seo-site.json';
 import {indexingEnabled} from './lib/seo';
-import {getStoreNavigation} from './lib/navigation.server';
+import {getStoreNavigation,getNavigationSnapshot} from './lib/navigation.server';
 import {StoreNavigationProvider} from './components/StoreNavigationProvider';
 import {WishlistProvider} from './components/WishlistProvider';
-import {Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, isRouteErrorResponse, useRouteError,type ShouldRevalidateFunctionArgs} from 'react-router';
-import type {ReactNode, CSSProperties} from 'react';
+import {Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, isRouteErrorResponse, useRouteError,type ShouldRevalidateFunctionArgs,useNavigation} from 'react-router';
+import {useEffect,useState,type ReactNode,type CSSProperties} from 'react';
 import {settings} from './settings';
 import {CartProvider} from './components/CartProvider';
 import {StoreLayout} from './components/StoreLayout';
@@ -21,17 +26,25 @@ import type {Route} from './+types/root';
 import {getHomepageSettings} from './lib/homepage.server';
 import {environmentContext} from './storefront.context';
 
+// Google runs only through GTM-56L6HTJ9 (owner's decision, 20 Nov): the site loads no Google tag IDs of its own.
+const GTM_INIT="window.dataLayer = window.dataLayer || [];\n  window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});";
 export const middleware: Route.MiddlewareFunction[] = [storefrontMiddleware];
 
-export async function loader({context,request}:Route.LoaderArgs) {const env=context.get(environmentContext);const [homepage,navigation]=await Promise.all([getHomepageSettings(env),getStoreNavigation(env)]);return {hostedStoreOrigin:hostedStoreOrigin(env),tracking:{...trackingSettings,enabled:trackingEnabled(request,env)},seo:{...seoSite,indexingEnabled:indexingEnabled(request,env,seoSite.origin),requestOrigin:new URL(request.url).origin,logo:settings.logo,socials:settings.socials.map(link=>link.href)},settings:{...settings,...navigation},banners:homepage.banners,announcementVisible:homepage.announcementVisible,influencers:homepage.influencers};}
-export function shouldRevalidate({currentUrl,nextUrl,formMethod,defaultShouldRevalidate}:ShouldRevalidateFunctionArgs){if(formMethod&&formMethod.toUpperCase()!=='GET')return defaultShouldRevalidate;if(currentUrl.pathname!==nextUrl.pathname||currentUrl.search!==nextUrl.search)return false;return defaultShouldRevalidate;}
+export async function loader({context,request}:Route.LoaderArgs) {const env=context.get(environmentContext);const navigation=getNavigationSnapshot(env),navigationPending=getStoreNavigation(env);const homepage=await (isHomepageRequest(request.url)?getHomepageSettings(env):Promise.resolve({banners:[],influencers:{enabled:false,heading:"Style in Motion",reels:[]}}));return {navigationPending,hostedStoreOrigin:hostedStoreOrigin(env),tracking:{...trackingSettings,enabled:trackingEnabled(request,env)},seo:{...seoSite,indexingEnabled:indexingEnabled(request,env,seoSite.origin),requestOrigin:new URL(request.url).origin,logo:settings.logo,socials:settings.socials.map(link=>link.href)},settings:{...settings,...navigation},banners:homepage.banners,influencers:homepage.influencers};}
+export function shouldRevalidate({currentUrl,nextUrl,formMethod,defaultShouldRevalidate}:ShouldRevalidateFunctionArgs){if(formMethod&&formMethod.toUpperCase()!=='GET')return defaultShouldRevalidate;if(currentUrl.pathname!==nextUrl.pathname)return nextUrl.pathname==='/';if(currentUrl.search!==nextUrl.search)return false;return defaultShouldRevalidate;}
 
 export function Layout({children}: {children: ReactNode}) {
-  return <html lang="en"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="preconnect" href="https://cdn.shopify.com"/><HomepageHeroPreload/><link rel="icon" type="image/png" href="/images/equator-favicon-emblem-20261110.png?v=20261110"/><link rel="apple-touch-icon" href="/images/equator-favicon-emblem-20261110.png?v=20261110"/><Meta/><SeoHead/><TrackingHead/><Links/></head><body>{children}<ScrollRestoration/><Scripts/></body></html>;
+  return <html lang="en"><head><meta charSet="utf-8"/>{/* Google Tag Manager GTM-56L6HTJ9: the snippet from GTM's install screen, directly in <head> so Tag Assistant and GTM detect it. */}<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-56L6HTJ9"/><script id="equator-gtm-init" dangerouslySetInnerHTML={{__html:GTM_INIT}}/><script id="equator-early-add" dangerouslySetInnerHTML={{__html:EARLY_ADD_SCRIPT}}/><script id="equator-startup-recovery" dangerouslySetInnerHTML={{__html:'('+installStartupRecovery.toString()+')(window);'}}/><meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="preconnect" href="https://cdn.shopify.com"/><HomepageHeroPreload/><link rel="icon" href="/favicon.ico?v=20261120" sizes="16x16 32x32 48x48"/><link rel="icon" type="image/png" sizes="48x48" href="/images/equator-icon-20261120-48.png?v=20261120"/><link rel="icon" type="image/png" sizes="96x96" href="/images/equator-icon-20261120-96.png?v=20261120"/><link rel="icon" type="image/png" sizes="192x192" href="/images/equator-icon-20261120-192.png?v=20261120"/><link rel="apple-touch-icon" sizes="180x180" href="/images/equator-apple-touch-icon-20261120.png?v=20261120"/><Meta/><SeoHead/><TrackingHead/><Links/></head><body>{children}<ScrollRestoration/><Scripts/></body></html>;
 }
 
 export default function App() {
-  const data = useLoaderData<typeof loader>();
+  const loaded = useLoaderData<typeof loader>();
+  const [navigation,setNavigation]=useState({menu:loaded.settings.menu,collectionGroups:loaded.settings.collectionGroups});
+  useEffect(()=>{markHydrated();preloadRouteModules();},[]);
+  const routeNavigation=useNavigation();
+  useEffect(()=>{(window as Window&{__equatorNavigating?:boolean}).__equatorNavigating=routeNavigation.state!=='idle';},[routeNavigation.state]);
+  useEffect(()=>{let active=true;void loaded.navigationPending.then(value=>{if(active)setNavigation(value);});return()=>{active=false;};},[loaded.navigationPending]);
+  const data={...loaded,settings:{...loaded.settings,...navigation}};
   const theme = {
     '--color-paper': data.settings.colors.background,
     '--color-ink': data.settings.colors.text,
@@ -44,11 +57,11 @@ export default function App() {
     '--motion-ease': data.settings.motion.easing,
     '--navigation-height': `${data.settings.header.height}px`,
   } as CSSProperties;
-  return <div style={theme}><StoreNavigationProvider menu={data.settings.menu} collectionGroups={data.settings.collectionGroups}><BannerSettingsProvider initialBanners={data.banners}><WishlistProvider><CartProvider><TrackingEvents config={data.tracking}/><StoreLayout hostedStoreOrigin={data.hostedStoreOrigin} settings={data.settings} announcementVisible={data.announcementVisible}><Outlet/></StoreLayout></CartProvider></WishlistProvider></BannerSettingsProvider></StoreNavigationProvider></div>;
+  return <div style={theme}><StoreNavigationProvider menu={data.settings.menu} collectionGroups={data.settings.collectionGroups}><BannerSettingsProvider initialBanners={data.banners}><WishlistProvider><CartProvider><NavigationRecovery/><TrackingEvents config={data.tracking}/><StoreLayout hostedStoreOrigin={data.hostedStoreOrigin} settings={data.settings}><Outlet/></StoreLayout></CartProvider></WishlistProvider></BannerSettingsProvider></StoreNavigationProvider></div>;
 }
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  return <main className="error-page"><h1>{isRouteErrorResponse(error) ? error.status : 'Preview unavailable'}</h1><a href="/">Return to Equator</a></main>;
+  return <main className="error-page"><h1>{isRouteErrorResponse(error) ? error.status : 'Something went wrong'}</h1><a href="/">Return to Equator</a></main>;
 }
 

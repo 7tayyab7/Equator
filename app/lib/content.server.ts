@@ -1,3 +1,4 @@
+import {isValidHandle} from './handle.ts';
 import {articleDates} from './article-dates.server';
 import {blogPagination} from './blog-pagination';
 import returnsPolicy from '../content/return-exchange-policy.json';
@@ -12,7 +13,7 @@ type Page={id:string;handle:string;title:string;body:string;seo:{title:string|nu
 type EditorialImage={url:string;width:number;height:number;alt:string};
 type Editorial={hero:{mobile?:EditorialImage;desktop?:EditorialImage};images:EditorialImage[];paragraphs:string[];productHandles:string[];videos:string[]};
 export const policyFields={'privacy-policy':'privacyPolicy','refund-policy':'refundPolicy','shipping-policy':'shippingPolicy','terms-of-service':'termsOfService'} as const;
-const slug=(handle:string)=>{if(!/^[a-z0-9-]{1,255}$/.test(handle))throw new Response('Page not found',{status:404});};
+const slug=(handle:string)=>{if(!isValidHandle(handle))throw new Response('Page not found',{status:404});};
 export async function getContentPage(env:Record<string,string>,handle:string,signal:AbortSignal){
  slug(handle);const data=handle==='return-exchange-policy'?{page:{id:"redesign:return-exchange-policy",handle,title:returnsPolicy.title,body:returnsPolicy.body,seo:returnsPolicy.seo}}:await requestStorefront<{page:Page|null}>(env,`query ContentPage($handle:String!){page(handle:$handle){id handle title body seo{title description}}}`,{handle},signal);
  if(!data.page)throw new Response('Page not found',{status:404});

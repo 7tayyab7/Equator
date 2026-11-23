@@ -2,12 +2,12 @@ import {campaignImageSources} from '../lib/campaign-images';
 import {useStoreMenu} from './StoreNavigationProvider';
 import {collectionGroup,collectionHref} from '../lib/collection-navigation';
 import {useEffect,useRef,useState,type CSSProperties} from 'react';
-import {Link} from 'react-router';
+import {Link,useNavigation} from 'react-router';
 import {useBannerSettings} from './BannerSettingsProvider';
 import {CampaignWheelGesture} from '../lib/campaign-gesture';
 
 export function CampaignBanners() {
-  const menu=useStoreMenu();
+  const menu=useStoreMenu(),transition=useNavigation();
   const {banners}=useBannerSettings();
   const root=useRef<HTMLDivElement>(null);
   const [active,setActive]=useState(0),[warmed,setWarmed]=useState<number|null>(null);
@@ -18,6 +18,7 @@ export function CampaignBanners() {
     if(image?.complete&&image.naturalWidth>0)setWarmed(active);
   },[active,banners]);
   useEffect(()=>{
+    if(transition.state!=="idle")return;
     const element=root.current;
     if(!element)return;
     const stage=element;
@@ -139,8 +140,9 @@ export function CampaignBanners() {
     window.addEventListener('touchend',touchEnd);window.addEventListener('touchcancel',cancelTouch);
     window.addEventListener('keydown',keydown);window.addEventListener('blur',interrupt);
     return()=>{layoutObserver.disconnect();window.removeEventListener('keydown',keydown);window.removeEventListener('blur',interrupt);window.removeEventListener('scroll',schedule);window.removeEventListener('resize',resize);reduce.removeEventListener('change',schedule);cancelAnimationFrame(frame);cancelAnimationFrame(animationFrame);window.removeEventListener('wheel',wheel);window.removeEventListener('touchstart',touchStart);window.removeEventListener('touchmove',touchMove);window.removeEventListener('touchend',touchEnd);window.removeEventListener('touchcancel',cancelTouch);};
-  },[banners]);
+  },[banners,transition.state]);
   const current=banners[active]||banners[0];
+  if(!current)return null;
   const title=(banner:typeof current)=>[banner.heading,banner.emphasis].filter(Boolean).join(' ').replace(/\s+/g,' ');
   return <div className="campaign-banners campaign-stage" ref={root} style={{'--slide-count':banners.length} as CSSProperties}>
     {banners.map((banner,index)=><div className="campaign-scroll-marker" id={`campaign-${banner.id}`} key={banner.id} style={{top:`${index*100}svh`}}/>)}
@@ -148,13 +150,13 @@ export function CampaignBanners() {
       {banners.map((banner,index)=>{
         const images=campaignImageSources(banner);
         const style={'--desktop-top':`${banner.desktopTop}%`,'--mobile-top':`${banner.mobileTop}%`,'--desktop-heading-width':`${banner.desktopHeadingMaxWidth}px`,'--mobile-heading-width':`${banner.mobileHeadingMaxWidth}px`,zIndex:index} as CSSProperties;
-        const button=<Link prefetch="intent" className="campaign-button" tabIndex={index===active?0:-1} to={collectionGroup(menu,banner.href,null)?collectionHref(banner.href,collectionGroup(menu,banner.href,null)!.title):banner.href}>{banner.buttonText}</Link>;
+        const button=<Link className="campaign-button" tabIndex={index===active?0:-1} to={collectionGroup(menu,banner.href,null)?collectionHref(banner.href,collectionGroup(menu,banner.href,null)!.title):banner.href}>{banner.buttonText}</Link>;
         return <section key={banner.id} aria-label={title(banner)} aria-hidden={index!==active} className={`campaign-banner tone-${banner.color} desktop-${banner.desktopPlacement} mobile-${banner.mobilePlacement} button-${banner.buttonLayout}`} style={style} data-parallax={banner.parallax} data-revealed={index===active} data-animation={banner.animationEnabled?banner.animationDirection:'none'}>
           {Math.abs(index-active)<=1&&<picture className="campaign-picture">
             <source media="(max-width:850px)" srcSet={images.mobile.srcSet} sizes={images.mobile.sizes} width={images.mobile.width} height={images.mobile.height}/>
             <img className="campaign-image" {...images.desktop} alt={banner.alt.trim()||`Equator ${title(banner)} collection campaign`} loading={index===active||warmed===active&&index===active+1?'eager':'lazy'} fetchPriority={index===active?'high':'low'} onLoad={()=>{if(index===active)setWarmed(index);}} decoding="async"/>
           </picture>}
-          <Link prefetch={index===active?(warmed===active?'render':'intent'):'none'} className="campaign-banner-link" to={collectionGroup(menu,banner.href,null)?collectionHref(banner.href,collectionGroup(menu,banner.href,null)!.title):banner.href} aria-label={`Shop ${title(banner)}`} tabIndex={index===active?0:-1}/>
+          <Link className="campaign-banner-link" to={collectionGroup(menu,banner.href,null)?collectionHref(banner.href,collectionGroup(menu,banner.href,null)!.title):banner.href} aria-label={`Shop ${title(banner)}`} tabIndex={index===active?0:-1}/>
           <div className="campaign-content">
             <div className="campaign-copy">
               {banner.showText&&<><h2 className="campaign-heading">{banner.heading}{banner.emphasis&&<>{banner.headingBreak?<br/>:' '}<strong>{banner.emphasis}</strong></>}</h2>{banner.description&&<p>{banner.description}</p>}</>}

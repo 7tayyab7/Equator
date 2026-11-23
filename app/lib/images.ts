@@ -28,3 +28,13 @@ export function responsiveImage(url:string,width:number,widths:readonly number[]
  const srcSet=imageSrcSet(url,widths,originalWidth);
  return {src:shopifyImageURL(url,originalWidth?Math.min(width,originalWidth):width),...(srcSet?{srcSet,sizes}:{})};
 }
+
+/** Widths offered for product-card photos (shared by the card and its gallery). */
+export const CARD_IMAGE_WIDTHS=[240,400,600,800,1000,1200,1600,2000] as const;
+
+/** Product-page gallery photo: one definition shared by the gallery and the tap-time preload, so both pick the same file. */
+export const GALLERY_IMAGE_WIDTHS=[400,600,800,1000,1400] as const;
+export const GALLERY_IMAGE_SIZES='(max-width:767px) 100vw, 34vw';
+export function galleryImage(url:string){
+ return {src:shopifyImageURL(url,1000),srcSet:GALLERY_IMAGE_WIDTHS.map(w=>`${shopifyImageURL(url,w)} ${w}w`).join(', '),sizes:GALLERY_IMAGE_SIZES};
+}

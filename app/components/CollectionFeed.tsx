@@ -1,3 +1,4 @@
+import {requestJSON} from '../lib/json-request.client';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {ProductCard} from './ProductCard';
 import type {ProductCardData} from '../lib/products.server';
@@ -17,7 +18,7 @@ export function CollectionFeed({handle,stateKey,initial,paused,menuContext}:{han
   if(locked.current||!more||paused)return;locked.current=true;setLoading(true);setError('');
   const controller=new AbortController();request.current=controller;const page=feed.pagination.page+1;
   const params=new URLSearchParams(stateKey);params.set('handle',handle);params.set('page',String(page));
-  try{const response=await fetch(`/resources/collection-products?${params}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});const data=await response.json() as Feed&{handle?:string;stateKey?:string;error?:string};
+  try{const {response,data}=await requestJSON<Feed&{handle?:string;stateKey?:string;error?:string}>(`/resources/collection-products?${params}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])},20000);
    if(!response.ok||data.handle!==handle||data.stateKey!==stateKey||!Array.isArray(data.products)||data.pagination?.page!==page)throw new Error(data.error||'Products changed. Please refresh this collection.');
    if(!controller.signal.aborted)setFeed(current=>({products:appendUniqueProducts(current.products,data.products),pagination:data.pagination}));
   }catch(cause){if(!controller.signal.aborted)setError(cause instanceof Error?cause.message:'More products could not be loaded.');}

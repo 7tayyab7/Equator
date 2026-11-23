@@ -21,24 +21,13 @@ export function KiwiSizeGuide({product,variantID,sku,onVariantChange,onAdd,selec
  const chartSelection=useRef({variant:variantID.split('/').pop()||'',sku});
  const variant=chartSelection.current.variant,requestKey=productID;
  const productData=JSON.stringify({productID,title:product.title,images:product.gallery.nodes.map(image=>image.url),tags:product.tags.join(','),collections:product.collections.nodes.map(collection=>collection.id.split('/').pop()).join(','),vendor:product.vendor,type:product.productType,sku:chartSelection.current.sku});
- // Warm only this product's guide after its primary image, during idle time.
- // Explicit intent still starts immediately, including on data-saving networks.
- useEffect(()=>{
-  if(enabled)return;
-  const connection=(navigator as Navigator&{connection?:{saveData?:boolean;effectiveType?:string}}).connection;
-  if(connection?.saveData||/^(slow-)?2g$/.test(connection?.effectiveType||''))return;
-  let idle:number|undefined,timer:ReturnType<typeof setTimeout>|undefined;
-  const primary=document.querySelector<HTMLImageElement>('.pdp-gallery img');
-  const schedule=()=>{if('requestIdleCallback' in window)idle=window.requestIdleCallback(()=>setEnabled(true),{timeout:1200});else timer=setTimeout(()=>setEnabled(true),200);};
-  if(!primary||primary.complete)schedule();else{primary.addEventListener('load',schedule,{once:true});primary.addEventListener('error',schedule,{once:true});}
-  return()=>{if(idle!==undefined)window.cancelIdleCallback(idle);if(timer)clearTimeout(timer);primary?.removeEventListener('load',schedule);primary?.removeEventListener('error',schedule);};
- },[enabled,productID]);
+ // Load the external size-chart SDK only on explicit chart intent.
  useEffect(()=>{
   if(!open)return;
   mount.current?.querySelectorAll('img').forEach(image=>{image.fetchPriority='high';});
-  const previous=document.activeElement as HTMLElement|null,overflow=document.body.style.overflow;
-  dialog.current?.showModal();dialog.current?.querySelector('.kiwi-guide-body')?.scrollTo({top:0});document.body.style.overflow='hidden';
-  return()=>{dialog.current?.close();document.body.style.overflow=overflow;if(previous?.isConnected)previous.focus();};
+  const previous=document.activeElement as HTMLElement|null;
+  dialog.current?.showModal();dialog.current?.querySelector('.kiwi-guide-body')?.scrollTo({top:0});
+  return()=>{dialog.current?.close();if(previous?.isConnected)previous.focus();};
  },[open]);
  useEffect(()=>{
   const node=mount.current;if(!node||!enabled||loaded.current===requestKey&&node.querySelector('.ks-chart-tab-container'))return;

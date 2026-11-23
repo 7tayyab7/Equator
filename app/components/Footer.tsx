@@ -1,16 +1,22 @@
 import {ArrowIcon} from './ArrowIcon';
 import {PaymentMethods} from './PaymentMethods';
 import {StoreWordmark} from './StoreWordmark';
-import {useState, type ReactNode} from 'react';
+import {useEffect, useState, type ReactNode} from 'react';
 import {Link} from 'react-router';
 import type {settings as defaultSettings} from '../settings';
 
-function FooterGroup({id, title, children, className = ''}: {id: string; title: string; children: ReactNode; className?: string}) {
+/** Google Maps is heavy: on phones it loads only once Store Locations is opened (desktop always shows it). */
+function StoreMap({src, expanded}: {src: string; expanded: boolean}) {
+  const [desktop, setDesktop] = useState(false);
+  useEffect(() => {const query = window.matchMedia('(min-width:851px)'), update = () => setDesktop(query.matches); update(); query.addEventListener('change', update); return () => query.removeEventListener('change', update);}, []);
+  return expanded || desktop ? <iframe title="Equator store location — MM Alam Road, Lahore" src={src} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/> : <div className="footer-map-placeholder" aria-hidden="true"/>;
+}
+function FooterGroup({id, title, children, className = ''}: {id: string; title: string; children: ReactNode | ((expanded: boolean) => ReactNode); className?: string}) {
   const [expanded, setExpanded] = useState(false);
   return <section className={`footer-group ${className} ${expanded ? 'is-expanded' : ''}`}>
     <h2 className="footer-desktop-heading footer-heading">{title}</h2>
     <h2 className="footer-mobile-heading"><button aria-expanded={expanded} aria-controls={id} onClick={() => setExpanded(!expanded)}>{title}<span className="accordion-plus" aria-hidden="true"/></button></h2>
-    <div id={id} className="footer-group-panel"><div className="footer-group-content">{children}</div></div>
+    <div id={id} className="footer-group-panel"><div className="footer-group-content">{typeof children === 'function' ? children(expanded) : children}</div></div>
   </section>;
 }
 
@@ -41,8 +47,10 @@ export function Footer({settings,onCookies,hostedStoreOrigin}: {settings: typeof
           <p className="newsletter-consent">By subscribing, you agree to receive Equator news and offers. <Link to="/pages/privacy-policy">Privacy policy</Link></p>
         </section>
         <FooterGroup id="footer-store-locations" title={settings.storeLocation.heading} className="footer-location">
-          <iframe title="Equator store location — MM Alam Road, Lahore" src={settings.storeLocation.mapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/>
+          {expanded => <>
+          <StoreMap src={settings.storeLocation.mapUrl} expanded={expanded}/>
           <Link className="store-location-link" to={settings.storeLocation.href}>{settings.storeLocation.caption}<span aria-hidden="true"><ArrowIcon direction="up-right"/></span></Link>
+          </>}
         </FooterGroup>
       </div>
       <FooterGroup id="footer-shop" title="Shop Equator" className="footer-shop">

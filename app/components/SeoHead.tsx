@@ -1,6 +1,25 @@
 import {useLocation,useMatches} from 'react-router';
 import {buildSeo,safeJsonLd,type SeoContext} from '../lib/seo';
 import fallback from '../content/seo-site.json';
+
+const winterCollections={
+ '@context':'https://schema.org',
+ '@type':'ItemList',
+ '@id':'https://equatorstores.com/#winter-collections',
+ name:'Winter 2026 Collections',
+ description:'Shop the latest winter arrivals and winter clothing collections at Equator Stores.',
+ numberOfItems:7,
+ itemListElement:[
+  {'@type':'ListItem',position:1,name:"New Arrivals - Winter '26",url:'https://equatorstores.com/collections/winter-2026'},
+  {'@type':'ListItem',position:2,name:'Winter Clearance - Flat 50% Off',url:'https://equatorstores.com/collections/winter-sale'},
+  {'@type':'ListItem',position:3,name:'Jackets',url:'https://equatorstores.com/collections/new-winter-jackets'},
+  {'@type':'ListItem',position:4,name:'Sweatshirts',url:'https://equatorstores.com/collections/wwsweatshirts-uppers-hoods'},
+  {'@type':'ListItem',position:5,name:'Sweaters',url:'https://equatorstores.com/collections/wwsweaters?menu=casual'},
+  {'@type':'ListItem',position:6,name:'Blazers',url:'https://equatorstores.com/collections/new-winter-blazers'},
+  {'@type':'ListItem',position:7,name:'Bottoms',url:'https://equatorstores.com/collections/new-winter-trousers'},
+ ],
+};
+
 export function SeoHead(){
  const matches=useMatches(),location=useLocation(),root=matches.find(match=>match.id==='root')?.loaderData as {seo?:SeoContext}|undefined;
  const site=root?.seo||{...fallback,indexingEnabled:false,requestOrigin:fallback.origin,logo:'/images/equator-wordmark-2026.png',socials:[]};
@@ -12,5 +31,6 @@ export function SeoHead(){
  {seo.article&&<><meta property="article:published_time" content={seo.article.published}/>{seo.article.modified&&<meta property="article:modified_time" content={seo.article.modified}/>}</>}
  {site.verification.map((tag,index)=><meta key={`${tag.name}:${index}`} name={tag.name} content={tag.content}/>)}
  <script type="application/ld+json" dangerouslySetInnerHTML={{__html:safeJsonLd(seo.jsonld)}}/>
+ {location.pathname==='/'&&<script type="application/ld+json" dangerouslySetInnerHTML={{__html:safeJsonLd(winterCollections)}}/>}
  </>;
 }

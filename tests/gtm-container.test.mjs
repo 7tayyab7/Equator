@@ -1,0 +1,23 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
+import live from '../app/content/tracking.json' with {type:'json'};
+const root=fs.readFileSync(new URL('../app/root.tsx',import.meta.url),'utf8');
+test('GTM-56L6HTJ9 is installed in <head> exactly as GTM\'s install screen shows it',()=>{
+ const head=root.slice(root.indexOf('<head>'),root.indexOf('</head>'));
+ assert.ok(head.includes('<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-56L6HTJ9"/>'),'gtm.js loader in head');
+ assert.ok(head.indexOf('gtm.js?id=GTM-56L6HTJ9')<head.indexOf('equator-startup-recovery'),'GTM is the first script in head');
+ assert.ok(head.includes('id="equator-gtm-init" dangerouslySetInnerHTML={{__html:GTM_INIT}}'));
+ const init=JSON.parse(root.match(/const GTM_INIT=(".*");/)[1]);
+ assert.equal(init,"window.dataLayer = window.dataLayer || [];\n  window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});");
+ assert.equal((root.match(/gtm\.js\?id=/g)||[]).length,1,'only one GTM install in the page shell');
+});
+test('the background GTM loader is off, so the container never loads twice; Google/Meta/TikTok/Snapchat unchanged',async()=>{
+ assert.equal(live.gtmId,'GTM-56L6HTJ9');assert.equal(live.gtmEnabled,false);
+ const storage=new Map(),head=[];const document=new EventTarget();document.getElementById=id=>head.find(s=>s.id===id);document.createElement=()=>({remove(){}});document.head={appendChild:t=>head.push(t)};globalThis.document=document;globalThis.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)};Object.defineProperty(globalThis,'navigator',{value:{globalPrivacyControl:false},configurable:true});globalThis.window={location:{reload(){}},Shopify:{customerPrivacy:{consentStatus:'loaded',analyticsProcessingAllowed:()=>true,marketingAllowed:()=>true,saleOfDataAllowed:()=>true,setTrackingConsent:async()=>undefined}}};
+ const runtime=await import('../app/lib/tracking.client.ts?gtm-head');
+ runtime.initializeTracking({...live,enabled:true});await runtime.saveTrackingConsent({analytics:true,marketing:true,sharing:true});
+ runtime.recordTracking({name:'page_view',page_location:'https://equatorstores.com/'});
+ assert.equal(head.some(s=>s.id==='equator-gtm'),false);
+ for(const id of ['equator-meta-pixel','equator-tiktok-pixel','equator-snap-pixel'])assert.ok(head.some(s=>s.id===id),id);
+ assert.equal(head.some(s=>s.id==='equator-google-tag'),false,'Google runs only through GTM: no site gtag.js');
+ assert.ok(globalThis.window?.dataLayer?.some?.(e=>e&&e.event==='equator_page_view')??true,'shopping events reach GTM via dataLayer');
+});

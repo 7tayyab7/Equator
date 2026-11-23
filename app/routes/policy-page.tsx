@@ -5,4 +5,4 @@ import {getPolicy} from '../lib/content.server';
 import {ContentLayout,ContentError} from '../components/ContentLayout';
 export async function loader({params,request,context}:Route.LoaderArgs){return getPolicy(context.get(environmentContext),params.handle,request.signal);}
 export default function Policy(){const page=useLoaderData<typeof loader>();return <ContentLayout title={page.title}><div className="rich-content" dangerouslySetInnerHTML={{__html:page.body}}/></ContentLayout>;}
-export const ErrorBoundary=ContentError;
+export {PageError as ErrorBoundary} from '../components/PageError';

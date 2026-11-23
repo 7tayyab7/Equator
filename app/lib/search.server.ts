@@ -23,7 +23,7 @@ async function loadIdentityCatalog(env:Record<string,string>,signal:AbortSignal)
    while(page.hasNextPage){if(!page.endCursor||variantCursors.has(page.endCursor))throw new Error('Repeated SKU cursor');variantCursors.add(page.endCursor);const more=await requestStorefront<{node:{variants:SkuConnection}|null}>(env,`query SearchSkuVariants($id:ID!,$after:String!) @inContext(country:PK){node(id:$id){...on Product{variants(first:250,after:$after){nodes{sku}pageInfo{hasNextPage endCursor}}}}}`,{id:product.id,after:page.endCursor},signal);if(!more.node)throw new Error('SKU product unavailable');skus.push(...more.node.variants.nodes.flatMap(v=>v.sku?[v.sku]:[]));page=more.node.variants.pageInfo;}
    products.push({...identity,skus});
   }
-  after=data.products.pageInfo.hasNextPage?data.products.pageInfo.endCursor:null;if(after){if(seen.has(after))throw new Error('Repeated search cursor');seen.add(after);}
+  after=nextPageCursor(data.products.pageInfo,seen);
  }while(after);
  cached={domain:env.PUBLIC_STORE_DOMAIN,expires:Date.now()+300_000,products,filters};return cached;
 }

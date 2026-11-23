@@ -7,14 +7,13 @@ import {StoreWordmark} from './StoreWordmark';
 import {WishlistContents} from './WishlistContents';
 import {useWishlist} from './WishlistProvider';
 import {useEffect, useRef, useState, type ReactNode, type FormEvent} from 'react';
-import {Link, useLocation, useNavigate} from 'react-router';
+import {Link, useLocation, useNavigate, useNavigation} from 'react-router';
 import type {settings as defaultSettings,MenuGroup} from '../settings';
 import {useCart, BagContents} from './CartProvider';
 import {Icon} from './Icon';
 import {Footer,SocialIcon} from './Footer';
 import {MenuFeatures} from './MenuFeatures';
 import {WhatsAppSupport} from './WhatsAppSupport';
-import {TrustAnnouncement} from './TrustAnnouncement';
 
 type Settings = Omit<typeof defaultSettings,'menu'|'collectionGroups'>&{menu:MenuGroup[];collectionGroups:MenuGroup[]};
 type Panel = 'menu' | 'search' | 'bag' | 'wishlist' | 'social' | 'region' | 'cookies' | null;
@@ -22,8 +21,9 @@ type Panel = 'menu' | 'search' | 'bag' | 'wishlist' | 'social' | 'region' | 'coo
 function Arrow() {return <ArrowIcon/>;}
 function CloseIcon() {return <svg viewBox="0 0 18 18" width="18" height="18" fill="none" aria-hidden="true"><path d="m3 3 12 12M15 3 3 15" stroke="currentColor" strokeWidth="1"/></svg>;}
 
-export function StoreLayout({settings, children,announcementVisible=false,hostedStoreOrigin}: {settings: Settings; children: ReactNode;announcementVisible?:boolean;hostedStoreOrigin:string}) {
+export function StoreLayout({settings, children,hostedStoreOrigin}: {settings: Settings; children: ReactNode;hostedStoreOrigin:string}) {
   const {pathname} = useLocation();
+  const transition=useNavigation();
   const {cart,bagRequest} = useCart();
   const {items:wishlistItems} = useWishlist();
   const wishlistCount = wishlistItems.length;
@@ -80,12 +80,12 @@ export function StoreLayout({settings, children,announcementVisible=false,hosted
     if (panel === 'search') dialog.current?.querySelector<HTMLInputElement>('input')?.focus();
     else if (panel) dialog.current?.querySelector<HTMLButtonElement>('.close-panel')?.focus();
     if (!panel && dialog.current?.open) dialog.current.close();
-    document.body.style.overflow = panel ? 'hidden' : '';
-    return () => {document.body.style.overflow = '';};
+    
   }, [panel]);
 
   useEffect(() => {if (bagRequest) setPanel('bag');}, [bagRequest]);
   useEffect(() => {setActive(null); setPanel(null); setMobileGroup(null);}, [pathname]);
+  useEffect(()=>{if(transition.state!=="idle"){setActive(null);setPanel(null);setMobileGroup(null);}},[transition.state]);
   useEffect(() => {
     return () => {if (leaveTimer.current) clearTimeout(leaveTimer.current);};
   }, []);
@@ -111,14 +111,14 @@ export function StoreLayout({settings, children,announcementVisible=false,hosted
     finally{setSavingConsent(false);}
   }
 
-  return <div className="store-layout" data-announcement={announcementVisible?'visible':'hidden'} data-homepage={pathname === '/' || undefined} data-reduced-motion={reducedMotion || undefined}>
+  return <div className="store-layout" data-announcement="hidden" data-homepage={pathname === '/' || undefined} data-reduced-motion={reducedMotion || undefined}>
     {consentNeeded&&<section className="cookie-notice" aria-label="Cookie choices"><p>We use cookies to improve your experience and, with your permission, measure visits and personalise advertising. <Link to="/pages/privacy-policy">Privacy policy</Link></p><div><button disabled={savingConsent} onClick={()=>void saveCookies({analytics:false,marketing:false,sharing:false})}>Essential only</button><button disabled={savingConsent} onClick={()=>openPanel('cookies')}>Preferences</button><button disabled={savingConsent} onClick={()=>void saveCookies({analytics:true,marketing:true,sharing:true})}>Accept all</button></div>{cookieMessage&&<p role="alert">{cookieMessage}</p>}</section>}
     <a className="skip-link" href="#main-content">Skip to content</a>
-    <header className={`store-header ${solid ? 'is-solid' : 'is-transparent'}`} onMouseLeave={leaveHeader}
+    <header className={`store-header ${solid ? 'is-solid' : 'is-transparent'}`} onClickCapture={event=>{if((event.target as Element).closest('a[href]')){setActive(null);setPanel(null);}}} onMouseLeave={leaveHeader}
       onMouseEnter={() => {if (leaveTimer.current) clearTimeout(leaveTimer.current);}}
       onKeyDown={event => {if (event.key === 'Escape') {event.currentTarget.querySelector<HTMLButtonElement>(`[aria-controls="menu-${active}"]`)?.focus(); setActive(null);}}}
       onBlur={event => {if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setActive(null);}}>
-      <div className="header-chrome">{announcementVisible&&<TrustAnnouncement/>}
+      <div className="header-chrome">
       <div className="header-bar">
         <div className="mobile-header-actions"><button className="mobile-menu-trigger icon-button" onClick={() => openPanel('menu')} aria-label="Open menu" aria-haspopup="dialog"><Icon name="menu"/></button><button className="icon-button wishlist-trigger" onClick={()=>openPanel('wishlist')} aria-label={wishlistLabel} aria-haspopup="dialog"><Icon name="heart" selected={wishlistCount>0}/>{wishlistCount>0&&<span className="bag-count" aria-hidden="true">{wishlistCount}</span>}</button></div>
         <nav ref={navigation} className="desktop-navigation" aria-label="Main navigation">
@@ -153,7 +153,7 @@ export function StoreLayout({settings, children,announcementVisible=false,hosted
     <Footer hostedStoreOrigin={hostedStoreOrigin} settings={settings} onCookies={()=>openPanel('cookies')}/>
     <WhatsAppSupport href={settings.contact.whatsapp}/>
     <p className="sr-only" role="status">{cookieMessage}</p>
-    <dialog ref={dialog} className={`store-dialog panel-${panel ?? 'closed'}`} aria-labelledby="panel-title"
+    <dialog ref={dialog} className={`store-dialog panel-${panel ?? 'closed'}`} aria-labelledby="panel-title" onClickCapture={event=>{if((event.target as Element).closest("a[href]"))setPanel(null);}}
       onCancel={() => setPanel(null)} onClose={() => setPanel(null)}
       onClick={event => {if (event.target === event.currentTarget) {
         const box = event.currentTarget.getBoundingClientRect();

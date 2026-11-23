@@ -1,4 +1,5 @@
 import {createShopifyRequestContext, createStorefrontClient,handleShopifyRoutes} from '@shopify/hydrogen';
+import {inheritQueryRuntime} from './lib/query-runtime.server';
 import {storefrontContext, environmentContext} from './storefront.context';
 import type {Route} from './+types/root';
 
@@ -8,6 +9,7 @@ export const storefrontMiddleware: Route.MiddlewareFunction = async ({request, c
     PUBLIC_STOREFRONT_API_TOKEN: '',
     ...context.get(environmentContext),
   };
+  inheritQueryRuntime(env,context.get(environmentContext));
   context.set(environmentContext, env);
   const requestContext = createShopifyRequestContext({request, i18n: {country: 'PK', language: 'EN'}});
   // Oxygen bindings take precedence over server-only local environment values.
