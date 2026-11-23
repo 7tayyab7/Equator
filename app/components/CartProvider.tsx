@@ -21,8 +21,19 @@ export function CartProvider({children}:{children:ReactNode}){
  return <Context value={{checkout,cart,ready,busy,error,message,update,bagRequest,openBag:()=>setBagRequest(value=>value+1)}}>{children}</Context>;
 }
 export function useCart(){const value=useContext(Context);if(!value)throw new Error('CartProvider is missing');return value;}
+/** Adds one preconnect (plus dns-prefetch fallback) for the checkout host; repeated calls are ignored. */
+export function preconnectCheckout(checkoutUrl:string){
+ if(typeof document==='undefined')return;let origin:string;try{origin=new URL(checkoutUrl).origin;}catch{return;}
+ if(!origin.startsWith('https://')||document.querySelector(`link[rel="preconnect"][href="${origin}"]`))return;
+ for(const rel of ['preconnect','dns-prefetch']){const link=document.createElement('link');link.rel=rel;link.href=origin;document.head.appendChild(link);}// No crossorigin: the checkout is a page navigation, which only reuses a credentialed connection.
+}
 export function BagContents({close,continueShopping=close}:{close:()=>void;continueShopping?:()=>void}){
  const {cart,ready,busy,error,message,update}=useCart();const [discount,setDiscount]=useState('');const discountID=useId();
+ // Checkout opens Shopify's hosted checkout, which can take a few seconds: the bag stays open and says so meanwhile.
+ const [redirecting,setRedirecting]=useState(false);
+ useEffect(()=>{const reset=(event:PageTransitionEvent)=>{if(event.persisted)setRedirecting(false);};window.addEventListener('pageshow',reset);return()=>window.removeEventListener('pageshow',reset);},[]);
+ // Shopify's checkout runs on its own host; connecting while the bag is open saves the DNS/TLS setup (~1 s) on Checkout.
+ useEffect(()=>{if(cart?.totalQuantity&&cart.checkoutUrl)preconnectCheckout(cart.checkoutUrl);},[cart?.checkoutUrl,cart?.totalQuantity]);
  useEffect(()=>{if(ready&&cart?.totalQuantity)recordCartViewed(cart);},[ready]);
  if(!ready)return <p role="status">Loading your bag…</p>;
  const format=(amount:{amount:string;currencyCode:string})=>new Intl.NumberFormat('en-PK',{style:'currency',currency:amount.currencyCode,maximumFractionDigits:0}).format(Number(amount.amount));
@@ -39,6 +50,6 @@ export function BagContents({close,continueShopping=close}:{close:()=>void;conti
   {!!cart?.totalQuantity&&<div className="pdp-bag-summary"><p className="pdp-bag-total">Subtotal <span>{format(cart.cost.subtotalAmount)}</span></p><p className="pdp-bag-shipping">Shipping and taxes calculated at checkout. <Link to="/pages/shipping-policy" onClick={close}>Delivery policy</Link></p>
   <form className="bag-discount" onSubmit={event=>{event.preventDefault();if(discount.trim())void update({action:'discount',code:discount.trim(),quantity:'0'});}}><label htmlFor={discountID}>Discount code</label><div><input id={discountID} name="discount" value={discount} onChange={event=>setDiscount(event.target.value)} maxLength={100} placeholder="Enter code" disabled={busy}/><button disabled={busy||!discount.trim()}>Apply</button></div></form>
   {cart.discountCodes.map(code=><p className="bag-discount-status" key={code.code}>{code.code}: {code.applicable?'Applied':'Not applicable'} <button disabled={busy} onClick={()=>void update({action:'discount',code:'',quantity:'0'})}>Remove</button></p>)}
-  {cart.discountCodes.some(code=>code.applicable)&&<p className="pdp-bag-total">Estimated total <span>{format(cart.cost.totalAmount)}</span></p>}<a className="solid-button nav-type" href={cart.checkoutUrl}>Checkout</a><button className="solid-button nav-type" onClick={continueShopping}>Continue shopping</button></div>}
+  {cart.discountCodes.some(code=>code.applicable)&&<p className="pdp-bag-total">Estimated total <span>{format(cart.cost.totalAmount)}</span></p>}<a className="solid-button nav-type bag-checkout" href={cart.checkoutUrl} data-keep-panel="" aria-busy={redirecting||undefined} aria-disabled={redirecting||undefined} onClick={event=>{if(event.metaKey||event.ctrlKey||event.shiftKey||event.button!==0)return;if(redirecting){event.preventDefault();return;}setRedirecting(true);}}>{redirecting?'Redirecting to checkout…':'Checkout'}</a><button className="solid-button nav-type" onClick={continueShopping}>Continue shopping</button></div>}
  </div>;
 }
