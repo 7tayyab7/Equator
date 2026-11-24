@@ -31,8 +31,12 @@ export function SocialIcon({name}: {name: string}) {
   </svg>;
 }
 
+const STORE_LOCATOR={title:'Store Locator',href:'/pages/store-locations'};
+
 export function Footer({settings,onCookies,hostedStoreOrigin}: {settings: typeof defaultSettings;onCookies:()=>void;hostedStoreOrigin:string}) {
   const orderLinks = settings.footer.filter(link => !['Contact Us', 'Store Locations', 'Our Blog'].includes(link.title));
+  // Store Locator closes the Information column (the map card on the right links to the same page).
+  const informationLinks = [...orderLinks.filter(link => link.href !== STORE_LOCATOR.href), STORE_LOCATOR];
   return <footer id="site-footer" className="store-footer">
     <div className="footer-main">
       <div className="footer-featured">
@@ -57,8 +61,8 @@ export function Footer({settings,onCookies,hostedStoreOrigin}: {settings: typeof
         <nav className="footer-shop-links" aria-label="Shop Equator">{settings.footerShop.map(link => <Link key={link.href} to={link.href}>{link.title}</Link>)}</nav>
       </FooterGroup>
       <div className="footer-information">
-        <FooterGroup id="footer-order-information" title="Order Information">
-          <nav className="footer-list" aria-label="Order Information">{orderLinks.map(link => <Link key={link.href} to={link.href}>{link.title}</Link>)}</nav>
+        <FooterGroup id="footer-order-information" title="Information">
+          <nav className="footer-list" aria-label="Information">{informationLinks.map(link => <Link key={link.href} to={link.href}>{link.title}</Link>)}</nav>
         </FooterGroup>
         <FooterGroup id="footer-customer-service" title="Customer Service">
           <nav className="footer-service-links" aria-label="Customer Service"><a href={`mailto:${settings.contact.email}`}>Email</a><Link to="/pages/contact">Contact Us</Link><Link to="/blogs/news">Our Blog</Link></nav>
