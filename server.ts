@@ -10,7 +10,6 @@ import {withPakistanOnly} from './app/lib/pakistan-only.server';
 import {ensureCookieHeaderAPI} from './app/lib/cookie-headers.server';
 import {withPageDeadline} from './app/lib/page-deadline.server';
 import {inlineRootStylesheet} from './app/lib/inline-css.server';
-import {withoutHttp3} from './app/lib/alt-svc.server';
 import {staticRedirect} from './app/lib/static-assets';
 
 const handleRequest = createRequestHandler(serverBuild, 'production');
@@ -21,9 +20,8 @@ export default {
     // Old site-file addresses (/images/…, /favicon.ico) now live on the CDN. Like before, they are public (not geo-limited):
     // social previews and search engines keep fetching them through this permanent redirect.
     const moved=(request.method==='GET'||request.method==='HEAD')?staticRedirect(new URL(request.url).pathname):null;
-    if(moved)return withoutHttp3(new Response(null,{status:301,headers:{Location:moved,'Cache-Control':'public, max-age=86400'}}));
-    // Every response, including geo blocks and error pages: keep browsers off HTTP/3 (see alt-svc.server.ts).
-    return withoutHttp3(await withPakistanOnly(request, env, async () => {
+    if(moved)return new Response(null,{status:301,headers:{Location:moved,'Cache-Control':'public, max-age=86400'}});
+    return withPakistanOnly(request, env, async () => {
     const started=performance.now();
     const metrics:Parameters<typeof queryTimingHeader>[0]=[];
     let publicCache;try{publicCache=await caches.open('equator-public-queries-v1');}catch{}
@@ -47,6 +45,6 @@ export default {
       console.error('Oxygen request failed', error);
       return pageFailure(request,error);
     }
-    }));
+    });
   },
 };
