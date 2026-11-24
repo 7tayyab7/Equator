@@ -8,6 +8,6 @@ test('media is lazy, resized from placeholders and iframe hosts are restricted',
 test('legacy checkout-domain shopping links stay in Hydrogen while real checkout/account links stay hosted',()=>{
  assert.equal(contentLink('https://checkout.equatorstores.com/products/shirt?variant=123'),'/products/shirt?variant=123');
  assert.equal(contentLink('https://checkout.equatorstores.com/collections/winter-2026'),'/collections/winter-2026');
- assert.equal(contentLink('https://checkout.equatorstores.com/account/login'),'https://equatorstores.myshopify.com/account/login');
- assert.equal(contentLink('https://checkout.equatorstores.com/checkouts/example?step=1'),'https://equatorstores.myshopify.com/checkouts/example?step=1');
+ assert.equal(contentLink('https://checkout.equatorstores.com/account/login'),'https://checkout.equatorstores.com/account/login');
+ assert.equal(contentLink('https://checkout.equatorstores.com/checkouts/example'),'https://checkout.equatorstores.com/checkouts/example');
 });

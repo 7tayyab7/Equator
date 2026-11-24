@@ -1,6 +1,5 @@
 import {responsiveImage} from './images.ts';
 import sanitizeHtml from 'sanitize-html';
-import {HOSTED_STORE_ORIGIN} from './hosted-store.ts';
 
 const storeHosts=new Set(['equatorstores.com','www.equatorstores.com','equatorstores.myshopify.com','checkout.equatorstores.com']);
 export function contentLink(href:string){
@@ -9,7 +8,7 @@ export function contentLink(href:string){
   if(storeHosts.has(url.hostname)){
    const path=url.pathname.replace(/^\/collections\/[^/]+\/products\//,'/products/');
    if(/^\/(?:products|collections|pages|policies|blogs)(?:\/|$)|^\/(?:cart|search)\/?$|^\/$/.test(path))return `${path}${url.search}${url.hash}`;
-   if(url.hostname==='checkout.equatorstores.com')return `${HOSTED_STORE_ORIGIN}${path}${url.search}${url.hash}`;
+   if(url.hostname==='checkout.equatorstores.com')return url.href;
    return `https://equatorstores.com${path}${url.search}${url.hash}`;
   }return url.href;
  }catch{return '';}
