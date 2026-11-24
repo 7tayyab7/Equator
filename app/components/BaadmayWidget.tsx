@@ -1,4 +1,5 @@
 import {useEffect,useId,useRef,useState} from 'react';
+import {staticAsset} from '../lib/static-assets';
 import {loadJSON} from '../lib/json-request.client';
 import {baadmayInstallment,type BaadmayConfig} from '../lib/baadmay';
 import type {Money} from '../lib/product-helpers';
@@ -12,10 +13,10 @@ export function BaadmayWidget({price}:{price:Money}){
  const installment=baadmayInstallment(Number(price.amount),price.currencyCode,config);
  if(price.currencyCode!=='PKR')return null;
  return <div className="pdp-baadmay">
-  <button type="button" className="baadmay-trigger" aria-haspopup="dialog" aria-controls={id} aria-expanded={open} onClick={()=>setOpen(true)}><img src="/images/payments/baadmay.svg" width="99" height="31" alt="Baadmay"/><span>Pay in 3 installments{installment!==null?<> of <strong>{rupees(installment)}</strong></>:<> · <strong>Learn more</strong></>}</span><span className="baadmay-info" aria-hidden="true">i</span></button>
+  <button type="button" className="baadmay-trigger" aria-haspopup="dialog" aria-controls={id} aria-expanded={open} onClick={()=>setOpen(true)}><img src={staticAsset('/images/payments/baadmay.svg')} width="99" height="31" alt="Baadmay"/><span>Pay in 3 installments{installment!==null?<> of <strong>{rupees(installment)}</strong></>:<> · <strong>Learn more</strong></>}</span><span className="baadmay-info" aria-hidden="true">i</span></button>
   <dialog ref={dialog} id={id} className="baadmay-dialog" aria-labelledby={title} onCancel={()=>setOpen(false)} onClose={()=>setOpen(false)} onClick={event=>{if(event.target===event.currentTarget){const box=event.currentTarget.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)setOpen(false);}}}>
    <button type="button" className="baadmay-close" aria-label="Close Baadmay information" onClick={()=>setOpen(false)}>×</button>
-   <img className="baadmay-dialog-logo" src="/images/payments/baadmay.svg" width="116" height="36" alt="Baadmay"/>
+   <img className="baadmay-dialog-logo" src={staticAsset('/images/payments/baadmay.svg')} width="116" height="36" alt="Baadmay"/>
    <h2 id={title}>Pay in 3 easy installments</h2><p className="baadmay-intro">Thora abhi, baqi Baadmay.</p>
    {installment!==null&&<p className="baadmay-estimate">Estimated installment <strong>{rupees(installment)}</strong></p>}
    <ol className="baadmay-steps"><li><span aria-hidden="true">1</span>Select Baadmay at checkout</li><li><span aria-hidden="true">2</span>Verify your Baadmay account details</li><li><span aria-hidden="true">3</span>Pay your first installment; the next two are due monthly</li></ol>
