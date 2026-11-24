@@ -1,4 +1,5 @@
 import {ArrowIcon} from './ArrowIcon';
+import {staticAsset} from '../lib/static-assets';
 import {Link} from 'react-router';
 import {useEffect,useId,useRef,useState} from 'react';
 import {reelSource,type InfluencerReel,type InfluencersSettings} from '../lib/influencers';
@@ -12,7 +13,7 @@ function ReelCard({reel,onOpen,paused}:{reel:InfluencerReel;onOpen:()=>void;paus
  useEffect(()=>{const v=video.current;if(!v)return;const sync=()=>{if(visible&&!paused&&!reduced&&!saveData&&document.visibilityState==='visible')void v.play().catch(()=>{});else v.pause();};sync();document.addEventListener('visibilitychange',sync);return()=>{v.pause();document.removeEventListener('visibilitychange',sync);};},[visible,paused,reduced,saveData,near]);
  return <div className="influencer-card" ref={card}>
   <div className="influencer-media">
-   {source&&!failed?<video ref={video} src={near&&!reduced&&!saveData?source.url:undefined} poster={near&&reel.poster?shopifyImageURL(reel.poster,600):undefined} muted loop playsInline preload={near?'metadata':'none'} autoPlay={visible&&!paused&&!reduced&&!saveData} onError={()=>setFailed(true)} aria-hidden="true" tabIndex={-1}/>:<div className="influencer-placeholder"><img src="/images/equator-card-sign.png" alt="" width="64" height="64"/><span>{failed?'Video unavailable':'Videos coming soon'}</span></div>}
+   {source&&!failed?<video ref={video} src={near&&!reduced&&!saveData?source.url:undefined} poster={near&&reel.poster?shopifyImageURL(reel.poster,600):undefined} muted loop playsInline preload={near?'metadata':'none'} autoPlay={visible&&!paused&&!reduced&&!saveData} onError={()=>setFailed(true)} aria-hidden="true" tabIndex={-1}/>:<div className="influencer-placeholder"><img src={staticAsset('/images/equator-card-sign.png')} alt="" width="64" height="64"/><span>{failed?'Video unavailable':'Videos coming soon'}</span></div>}
    <button className="influencer-open" type="button" aria-label={`Play ${reel.title}`} aria-haspopup="dialog" disabled={!source||failed} onClick={onOpen}><span className="influencer-play" aria-hidden="true"><PlayIcon/></span></button>
   </div>{reel.product&&<Link className="influencer-shop" to={`/products/${reel.product.handle}`}>Shop the look <span aria-hidden="true"><ArrowIcon/></span></Link>}
  </div>;

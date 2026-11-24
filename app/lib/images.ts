@@ -1,3 +1,4 @@
+import {staticAsset} from './static-assets.ts';
 /** Shopify owns these transforms; local assets and other vendors stay untouched. */
 function imageURL(value:string):URL|null {
  try {
@@ -9,7 +10,8 @@ function imageURL(value:string):URL|null {
 }
 export function shopifyImageURL(value:string,width:number):string {
  const url=imageURL(value);
- if(!url||!Number.isFinite(width)||width<1)return value;
+ if(!url)return staticAsset(value);// Site files (/images/…) are served from the CDN
+ if(!Number.isFinite(width)||width<1)return value;
  url.searchParams.set('width',String(Math.min(5760,Math.round(width))));
  // Do not carry a previous fixed height or force a format; preserve aspect ratio
  // and let Shopify negotiate a modern format supported by the requesting browser.

@@ -1,4 +1,5 @@
 import {takeEarlyAdd} from '../lib/early-add';
+import {staticAsset} from '../lib/static-assets';
 import {loadPublishedReviews} from '../lib/review-reader.server';
 import {getProductPairings} from '../lib/pairing.server';
 import {cardFields,toCard} from '../lib/product.server';
@@ -60,7 +61,7 @@ function ProductDetail({data}:{data:Awaited<ReturnType<typeof loader>>}){
  <article className="pdp" aria-label={product.title}>
   <Suspense fallback={<ProductGallery images={product.gallery.nodes} title={product.title}/>}><Await resolve={secondary} errorElement={<ProductGallery images={product.gallery.nodes} title={product.title}/>}>{extras=><ProductGallery images={extras.gallery} title={product.title}/>}</Await></Suspense>
   <div className="pdp-information-column"><div className="pdp-information">
-   <Link to="/" className="pdp-brand"><img src="/images/equator-wordmark-2026.png" alt="Equator" width="1785" height="316"/></Link>
+   <Link to="/" className="pdp-brand"><img src={staticAsset('/images/equator-wordmark-2026.png')} alt="Equator" width="1785" height="316"/></Link>
    <h1>{product.title}</h1><div className="pdp-price">{variant?.compareAtPrice&&Number(variant.compareAtPrice.amount)>Number(price.amount)&&<del>{money(variant.compareAtPrice)}</del>} <span>{money(price)}</span>{variant?.sku?.trim()&&<p className="pdp-sku">SKU: {variant.sku}</p>}</div>
    <BaadmayWidget price={price}/>
    <Suspense fallback={null}><Await resolve={data.reviews} errorElement={null}>{review=>review&&<a className="pdp-review-summary" href="#customer-reviews">{review.count?`${review.rating.toFixed(1)} / 5 · ${review.count} ${review.count===1?'review':'reviews'}`:'No reviews yet'}</a>}</Await></Suspense>
