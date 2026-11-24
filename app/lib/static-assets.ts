@@ -2,10 +2,9 @@
  * The storefront's own images, icons and font live in app/static and are bundled like the scripts, so in production
  * they are served from Shopify's CDN (cdn.shopify.com) instead of from equatorstores.com.
  *
- * Why: files in public/ were answered by Oxygen's static file layer, which our server code never sees. Those answers
- * carried Shopify's `alt-svc: h3` hint, which switched first-time visitors onto HTTP/3 — the connection that goes
- * silent for 29 s on many Pakistani networks (see alt-svc.server.ts). Now every equatorstores.com response goes
- * through server.ts and says `Alt-Svc: clear`.
+ * Why: files in public/ were answered by Oxygen's static file layer on equatorstores.com itself. From the CDN they are
+ * cached long-term and served from Shopify's file network. (The first-visit 29 s HTTP/3 stall was fixed in DNS instead:
+ * the apex A record points to 23.227.38.69, because sessions to 23.227.38.65 went silent.)
  *
  * Old addresses such as /images/settings-logo.png keep working: server.ts answers them with a permanent redirect to
  * the CDN copy (staticRedirect), so search engines, social previews and old links are unaffected.
