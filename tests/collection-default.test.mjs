@@ -9,7 +9,7 @@ test('Liquid default sort names map to shopper labels without treating unknown s
 test('sort label lookup uses the Shopify-hosted bridge, validates the collection, and fails safely',async()=>{
  const original=globalThis.fetch,env={PUBLIC_CHECKOUT_DOMAIN:'checkout.equatorstores.com'},signal=new AbortController().signal;
  try{
-  globalThis.fetch=async url=>{assert.equal(url,'https://checkout.equatorstores.com/collections/jackets?view=hydrogen-sort');return Response.json({handle:'jackets',defaultSort:'manual'});};
+  globalThis.fetch=async url=>{assert.equal(url,'https://equatorstores.myshopify.com/collections/jackets?view=hydrogen-sort');return Response.json({handle:'jackets',defaultSort:'manual'});};
   assert.equal(await getCollectionDefaultSort(env,'jackets',signal),'featured');
   globalThis.fetch=async()=>Response.json({handle:'another',defaultSort:'manual'});assert.equal(await getCollectionDefaultSort(env,'jackets',signal),'collection-default');
   globalThis.fetch=async()=>new Response('unavailable',{status:429});assert.equal(await getCollectionDefaultSort(env,'jackets',signal),'collection-default');
